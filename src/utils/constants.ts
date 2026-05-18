@@ -21,8 +21,8 @@ export const COLORS_HEX = {
 
 // Card dimensions
 export const CARD = {
-  width: 1.2,
-  height: 1.8,
+  width: 1.4,
+  height: 2.0,
   depth: 0.02,
   borderRadius: 0.08,
 } as const
@@ -41,9 +41,9 @@ export const TIMING = {
 
 // Scene parameters
 export const SCENE = {
-  cardSphereRadius: 18,
-  cameraIdleDistance: 30,
-  cameraLockDistance: 10,
+  cardSphereRadius: 10,
+  cameraIdleDistance: 16,
+  cameraLockDistance: 8,
   starCount: 3000,
   starDepth: 80,
   goldParticleCount: 800,

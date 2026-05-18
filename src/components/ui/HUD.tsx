@@ -8,10 +8,10 @@ export function HUD() {
       {/* Title */}
       <div className="absolute top-6 left-0 right-0 flex justify-center">
         <h1
-          className="text-xl tracking-[0.4em] uppercase font-light"
+          className="text-xl tracking-[0.3em] font-light"
           style={{ color: 'rgba(255, 215, 0, 0.6)' }}
         >
-          Wedding Lucky Draw
+          婚礼幸运抽奖
         </h1>
       </div>
 

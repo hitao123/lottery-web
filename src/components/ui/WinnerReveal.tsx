@@ -22,10 +22,10 @@ export function WinnerReveal() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
-              className="text-sm tracking-[0.3em] uppercase mb-4"
+              className="text-sm tracking-[0.3em] mb-4"
               style={{ color: 'rgba(255, 215, 0, 0.7)' }}
             >
-              Round {currentRound}
+              第 {currentRound} 轮
             </motion.div>
 
             {/* Main title */}
@@ -36,7 +36,7 @@ export function WinnerReveal() {
               className="text-2xl mb-6 tracking-wider"
               style={{ color: 'rgba(255, 248, 231, 0.9)' }}
             >
-              Lucky Guest
+              🎉 幸运来宾 🎉
             </motion.div>
 
             {/* Winner number - big and prominent */}
@@ -61,7 +61,7 @@ export function WinnerReveal() {
               className="text-lg tracking-[0.2em]"
               style={{ color: 'rgba(255, 255, 255, 0.5)' }}
             >
-              Forever Love
+              恭喜中奖
             </motion.div>
 
             {/* Keyboard hint */}
@@ -72,7 +72,7 @@ export function WinnerReveal() {
               className="mt-12 text-xs tracking-wider"
               style={{ color: 'rgba(255, 255, 255, 0.3)' }}
             >
-              Press N for next round
+              按 N 进入下一轮
             </motion.div>
           </div>
         </motion.div>

@@ -85,7 +85,7 @@ export function useCardTexture({ code, width = 512, height = 768 }: CardTextureO
     // Main number text
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.font = 'bold 80px "SF Pro Display", "Helvetica Neue", Arial, sans-serif'
+    ctx.font = 'bold 88px "SF Pro Display", "Helvetica Neue", Arial, sans-serif'
     ctx.fillStyle = COLORS.gold
     ctx.shadowColor = 'rgba(212, 175, 55, 0.4)'
     ctx.shadowBlur = 15
@@ -105,14 +105,13 @@ export function useCardTexture({ code, width = 512, height = 768 }: CardTextureO
     ctx.stroke()
 
     // Subtitle text
-    ctx.font = '20px "SF Pro Display", "Helvetica Neue", Arial, sans-serif'
+    ctx.font = '22px "SF Pro Display", "PingFang SC", "Helvetica Neue", Arial, sans-serif'
     ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'
-    ctx.letterSpacing = '4px'
-    ctx.fillText('Forever Love', width / 2, height / 2 + 70)
+    ctx.fillText('永恒之爱', width / 2, height / 2 + 70)
 
-    ctx.font = '16px "SF Pro Display", "Helvetica Neue", Arial, sans-serif'
+    ctx.font = '16px "SF Pro Display", "PingFang SC", "Helvetica Neue", Arial, sans-serif'
     ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'
-    ctx.fillText('Lucky Wedding Guest', width / 2, height / 2 + 100)
+    ctx.fillText('幸运来宾', width / 2, height / 2 + 100)
 
     const tex = new THREE.CanvasTexture(canvas)
     tex.needsUpdate = true

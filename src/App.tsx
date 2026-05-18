@@ -21,7 +21,7 @@ function App() {
   useKeyboard({ onToggleFullscreen: toggleFullscreen })
 
   return (
-    <div className="w-full h-full relative">
+    <div style={{ width: '100vw', height: '100vh', position: 'relative', overflow: 'hidden' }}>
       <LotteryScene />
       <HUD />
     </div>

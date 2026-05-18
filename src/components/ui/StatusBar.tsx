@@ -22,32 +22,32 @@ export function StatusBar() {
       >
         {/* Round info */}
         <span style={{ color: 'rgba(255, 215, 0, 0.8)' }}>
-          Round {currentRound}
+          第 {currentRound} 轮
         </span>
 
         <span style={{ color: 'rgba(255, 255, 255, 0.2)' }}>|</span>
 
         {/* Progress */}
         <span style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-          {wonCount} / {totalGuests} drawn
+          已抽 {wonCount} / {totalGuests} 人
         </span>
 
         <span style={{ color: 'rgba(255, 255, 255, 0.2)' }}>|</span>
 
         {/* Remaining */}
         <span style={{ color: 'rgba(255, 255, 255, 0.4)' }}>
-          {remaining} remaining
+          剩余 {remaining} 人
         </span>
 
         <span style={{ color: 'rgba(255, 255, 255, 0.2)' }}>|</span>
 
         {/* Keyboard hints */}
         <span style={{ color: 'rgba(255, 255, 255, 0.3)' }}>
-          {phase === 'idle' && 'Space to draw'}
-          {phase === 'spinning' && 'Drawing...'}
-          {phase === 'chasing' && 'Selecting...'}
-          {phase === 'locking' && 'Locking...'}
-          {phase === 'revealed' && 'N: next | F: fullscreen'}
+          {phase === 'idle' && '按空格键开始抽奖'}
+          {phase === 'spinning' && '抽奖中...'}
+          {phase === 'chasing' && '选号中...'}
+          {phase === 'locking' && '锁定中...'}
+          {phase === 'revealed' && 'N: 下一轮 | F: 全屏'}
         </span>
       </div>
     </div>

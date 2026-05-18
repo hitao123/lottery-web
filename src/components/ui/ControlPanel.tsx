@@ -58,7 +58,7 @@ export function ControlPanel() {
               className="text-lg font-semibold mb-6 tracking-wider"
               style={{ color: 'rgba(255, 215, 0, 0.9)' }}
             >
-              Control Panel
+              控制面板
             </h2>
 
             {/* Number import */}
@@ -67,7 +67,7 @@ export function ControlPanel() {
                 className="block text-sm mb-2"
                 style={{ color: 'rgba(255, 255, 255, 0.6)' }}
               >
-                Guest Numbers (range)
+                来宾编号范围
               </label>
               <div className="flex gap-2">
                 <input
@@ -91,11 +91,11 @@ export function ControlPanel() {
                     color: '#d4af37',
                   }}
                 >
-                  Apply
+                  确认
                 </button>
               </div>
               <p className="text-xs mt-1" style={{ color: 'rgba(255, 255, 255, 0.3)' }}>
-                Current: {guests.length} guests loaded
+                当前已加载：{guests.length} 位来宾
               </p>
             </div>
 
@@ -105,7 +105,7 @@ export function ControlPanel() {
                 className="text-sm font-medium mb-3"
                 style={{ color: 'rgba(255, 255, 255, 0.6)' }}
               >
-                Winners ({winners.length})
+                中奖名单（{winners.length}）
               </h3>
               <div
                 className="max-h-48 overflow-y-auto rounded-lg p-3"
@@ -116,7 +116,7 @@ export function ControlPanel() {
               >
                 {winners.length === 0 ? (
                   <p className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.3)' }}>
-                    No winners yet
+                    暂无中奖者
                   </p>
                 ) : (
                   winners.map((w) => (
@@ -127,7 +127,7 @@ export function ControlPanel() {
                     >
                       <span>NO.{w.code}</span>
                       <span style={{ color: 'rgba(255, 255, 255, 0.3)' }}>
-                        Round {w.wonAtRound}
+                        第 {w.wonAtRound} 轮
                       </span>
                     </div>
                   ))
@@ -145,7 +145,7 @@ export function ControlPanel() {
                 color: 'rgba(255, 80, 80, 0.8)',
               }}
             >
-              Reset All
+              重置所有
             </button>
 
             {/* Keyboard shortcuts */}
@@ -154,23 +154,23 @@ export function ControlPanel() {
                 className="text-sm font-medium mb-3"
                 style={{ color: 'rgba(255, 255, 255, 0.6)' }}
               >
-                Shortcuts
+                快捷键
               </h3>
               <div className="space-y-2 text-xs" style={{ color: 'rgba(255, 255, 255, 0.4)' }}>
                 <div className="flex justify-between">
-                  <span>Space</span><span>Start Draw</span>
+                  <span>空格</span><span>开始抽奖</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Enter</span><span>Confirm Winner</span>
+                  <span>Enter</span><span>确认中奖</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>N</span><span>Next Round</span>
+                  <span>N</span><span>下一轮</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>F</span><span>Fullscreen</span>
+                  <span>F</span><span>全屏</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>R</span><span>Reset</span>
+                  <span>R</span><span>重置</span>
                 </div>
               </div>
             </div>
