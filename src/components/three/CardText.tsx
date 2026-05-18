@@ -9,109 +9,63 @@ interface CardTextureOptions {
 }
 
 /**
- * Creates a canvas texture for a card face.
- * Renders the number, subtitle text, and corner decorations.
+ * Creates an elegant card texture with Korean minimalist aesthetic.
+ * Clean typography, subtle gold accent, generous whitespace.
  */
-export function useCardTexture({ code, width = 512, height = 768 }: CardTextureOptions) {
+export function useCardTexture({ code, width = 360, height = 600 }: CardTextureOptions) {
   const texture = useMemo(() => {
     const canvas = document.createElement('canvas')
     canvas.width = width
     canvas.height = height
     const ctx = canvas.getContext('2d')!
 
-    // Background - transparent with subtle gradient
-    ctx.clearRect(0, 0, width, height)
-    const gradient = ctx.createLinearGradient(0, 0, width, height)
-    gradient.addColorStop(0, 'rgba(255, 255, 255, 0.08)')
-    gradient.addColorStop(1, 'rgba(255, 255, 255, 0.02)')
-    ctx.fillStyle = gradient
-    ctx.beginPath()
-    ctx.roundRect(0, 0, width, height, 32)
-    ctx.fill()
+    // Background — deep dark with very subtle gradient
+    const bg = ctx.createLinearGradient(0, 0, 0, height)
+    bg.addColorStop(0, 'rgba(15, 15, 30, 0.95)')
+    bg.addColorStop(1, 'rgba(8, 8, 20, 0.98)')
+    ctx.fillStyle = bg
+    ctx.fillRect(0, 0, width, height)
 
-    // Border
+    // Subtle border — thin gold line
     ctx.strokeStyle = COLORS.glassBorder
-    ctx.lineWidth = 4
-    ctx.beginPath()
-    ctx.roundRect(4, 4, width - 8, height - 8, 28)
-    ctx.stroke()
+    ctx.lineWidth = 1.5
+    const inset = 16
+    ctx.strokeRect(inset, inset, width - inset * 2, height - inset * 2)
 
-    // Top accent line
-    const topGradient = ctx.createLinearGradient(0, 0, width, 0)
-    topGradient.addColorStop(0, 'transparent')
-    topGradient.addColorStop(0.5, 'rgba(255, 215, 0, 0.6)')
-    topGradient.addColorStop(1, 'transparent')
-    ctx.strokeStyle = topGradient
-    ctx.lineWidth = 3
-    ctx.beginPath()
-    ctx.moveTo(30, 6)
-    ctx.lineTo(width - 30, 6)
-    ctx.stroke()
-
-    // Corner decorations
-    const cornerSize = 30
-    const cornerOffset = 40
-    ctx.strokeStyle = COLORS.glassBorder
-    ctx.lineWidth = 2
-
-    // Top-left
-    ctx.beginPath()
-    ctx.moveTo(cornerOffset, cornerOffset + cornerSize)
-    ctx.lineTo(cornerOffset, cornerOffset)
-    ctx.lineTo(cornerOffset + cornerSize, cornerOffset)
-    ctx.stroke()
-
-    // Top-right
-    ctx.beginPath()
-    ctx.moveTo(width - cornerOffset - cornerSize, cornerOffset)
-    ctx.lineTo(width - cornerOffset, cornerOffset)
-    ctx.lineTo(width - cornerOffset, cornerOffset + cornerSize)
-    ctx.stroke()
-
-    // Bottom-left
-    ctx.beginPath()
-    ctx.moveTo(cornerOffset, height - cornerOffset - cornerSize)
-    ctx.lineTo(cornerOffset, height - cornerOffset)
-    ctx.lineTo(cornerOffset + cornerSize, height - cornerOffset)
-    ctx.stroke()
-
-    // Bottom-right
-    ctx.beginPath()
-    ctx.moveTo(width - cornerOffset - cornerSize, height - cornerOffset)
-    ctx.lineTo(width - cornerOffset, height - cornerOffset)
-    ctx.lineTo(width - cornerOffset, height - cornerOffset - cornerSize)
-    ctx.stroke()
-
-    // Main number text
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    ctx.font = 'bold 88px "SF Pro Display", "Helvetica Neue", Arial, sans-serif'
-    ctx.fillStyle = COLORS.gold
-    ctx.shadowColor = 'rgba(212, 175, 55, 0.4)'
-    ctx.shadowBlur = 15
-    ctx.fillText(`NO.${code}`, width / 2, height / 2 - 20)
-    ctx.shadowBlur = 0
-
-    // Divider line
-    const dividerGradient = ctx.createLinearGradient(width / 2 - 60, 0, width / 2 + 60, 0)
-    dividerGradient.addColorStop(0, 'transparent')
-    dividerGradient.addColorStop(0.5, COLORS.glassBorder)
-    dividerGradient.addColorStop(1, 'transparent')
-    ctx.strokeStyle = dividerGradient
+    // Top accent — thin bright line
+    const topGrad = ctx.createLinearGradient(width * 0.2, 0, width * 0.8, 0)
+    topGrad.addColorStop(0, 'transparent')
+    topGrad.addColorStop(0.5, COLORS.gold)
+    topGrad.addColorStop(1, 'transparent')
+    ctx.strokeStyle = topGrad
     ctx.lineWidth = 1
     ctx.beginPath()
-    ctx.moveTo(width / 2 - 60, height / 2 + 30)
-    ctx.lineTo(width / 2 + 60, height / 2 + 30)
+    ctx.moveTo(width * 0.2, inset)
+    ctx.lineTo(width * 0.8, inset)
     ctx.stroke()
 
-    // Subtitle text
-    ctx.font = '22px "SF Pro Display", "PingFang SC", "Helvetica Neue", Arial, sans-serif'
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)'
-    ctx.fillText('永恒之爱', width / 2, height / 2 + 70)
+    // Main number — large, centered, elegant
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    ctx.font = `bold ${Math.floor(width * 0.2)}px "SF Pro Display", "Helvetica Neue", system-ui, sans-serif`
+    ctx.fillStyle = COLORS.goldLight
+    ctx.shadowColor = 'rgba(201, 169, 110, 0.3)'
+    ctx.shadowBlur = 8
+    ctx.fillText(`NO.${code}`, width / 2, height * 0.42)
+    ctx.shadowBlur = 0
 
-    ctx.font = '16px "SF Pro Display", "PingFang SC", "Helvetica Neue", Arial, sans-serif'
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)'
-    ctx.fillText('幸运来宾', width / 2, height / 2 + 100)
+    // Thin divider
+    ctx.strokeStyle = 'rgba(201, 169, 110, 0.2)'
+    ctx.lineWidth = 0.5
+    ctx.beginPath()
+    ctx.moveTo(width * 0.3, height * 0.55)
+    ctx.lineTo(width * 0.7, height * 0.55)
+    ctx.stroke()
+
+    // Subtitle — small, delicate
+    ctx.font = `300 ${Math.floor(width * 0.045)}px "PingFang SC", "SF Pro Display", system-ui, sans-serif`
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.35)'
+    ctx.fillText('永恒之爱', width / 2, height * 0.63)
 
     const tex = new THREE.CanvasTexture(canvas)
     tex.needsUpdate = true

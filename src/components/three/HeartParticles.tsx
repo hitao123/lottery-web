@@ -22,7 +22,7 @@ export function HeartParticles() {
       // Start at center
       positions[i * 3] = 0
       positions[i * 3 + 1] = 0
-      positions[i * 3 + 2] = 5
+      positions[i * 3 + 2] = 4
 
       // Random outward velocity
       const theta = Math.random() * Math.PI * 2
@@ -52,7 +52,7 @@ export function HeartParticles() {
       for (let i = 0; i < count; i++) {
         positions[i * 3] = 0
         positions[i * 3 + 1] = 0
-        positions[i * 3 + 2] = 5
+        positions[i * 3 + 2] = 4
         lifetimes[i] = 0
       }
     }

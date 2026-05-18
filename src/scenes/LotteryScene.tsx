@@ -7,7 +7,7 @@ import { PostProcessing } from '@/effects/PostProcessing'
 export function LotteryScene() {
   return (
     <Canvas
-      camera={{ position: [0, 0, 16], fov: 60, near: 0.1, far: 200 }}
+      camera={{ position: [0, 0, 28], fov: 55, near: 0.1, far: 300 }}
       gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
       style={{
         position: 'absolute',
@@ -15,9 +15,9 @@ export function LotteryScene() {
         left: 0,
         width: '100%',
         height: '100%',
-        background: '#0a0a1a',
+        background: '#050510',
       }}
-      dpr={[1, 2]}
+      dpr={[1, 1.5]}
     >
       <CameraRig />
       <Environment />

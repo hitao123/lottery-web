@@ -55,7 +55,7 @@ export function lockWinnerCard(
   return gsap.to(card.position, {
     x: 0,
     y: 0,
-    z: 5,
+    z: 4,
     duration,
     ease: 'power3.out',
   })

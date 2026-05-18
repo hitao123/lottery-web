@@ -108,7 +108,7 @@ export function createLotteryTimeline({
     {
       x: 0,
       y: 0,
-      z: 12,
+      z: 8,
       duration: TIMING.lockingDuration,
       ease: 'power3.out',
       onUpdate: () => camera.lookAt(0, 0, 0),

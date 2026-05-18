@@ -8,14 +8,12 @@ export function Environment() {
       <StarField />
       <GoldParticles />
       <HeartParticles />
-      {/* Ambient fill light */}
-      <ambientLight intensity={0.2} color={0x4444ff} />
-      {/* Key light - warm gold */}
-      <pointLight position={[20, 20, 20]} intensity={0.8} color={0xffd700} />
-      {/* Fill light - cool blue */}
-      <pointLight position={[-15, -10, -20]} intensity={0.3} color={0x4466ff} />
-      {/* Rim light */}
-      <pointLight position={[0, 30, -10]} intensity={0.4} color={0xffffff} />
+      {/* Subtle ambient — dark scene */}
+      <ambientLight intensity={0.15} color={0x334477} />
+      {/* Key light — warm gold, far away */}
+      <directionalLight position={[20, 15, 10]} intensity={0.4} color={0xc9a96e} />
+      {/* Fill — very subtle cool */}
+      <pointLight position={[-20, -10, -15]} intensity={0.15} color={0x4466aa} />
     </group>
   )
 }
