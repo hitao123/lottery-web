@@ -26,6 +26,7 @@ export type LotteryStore = {
   startDraw: () => void
   selectWinner: () => Guest | null
   confirmWinner: () => void
+  removeWinner: (guestId: number) => void
   nextRound: () => void
   reset: () => void
 }

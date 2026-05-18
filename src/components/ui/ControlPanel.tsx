@@ -9,6 +9,7 @@ export function ControlPanel() {
   const winners = useLotteryStore((s) => s.winners)
   const guests = useLotteryStore((s) => s.guests)
   const reset = useLotteryStore((s) => s.reset)
+  const removeWinner = useLotteryStore((s) => s.removeWinner)
 
   const handleImport = () => {
     const match = rangeInput.match(/^(\d+)-(\d+)$/)
@@ -122,17 +123,36 @@ export function ControlPanel() {
                   winners.map((w) => (
                     <div
                       key={w.id}
-                      className="flex justify-between py-1 text-sm"
+                      className="flex items-center justify-between py-1.5 text-sm"
                       style={{ color: 'rgba(255, 215, 0, 0.7)' }}
                     >
                       <span>NO.{w.code}</span>
-                      <span style={{ color: 'rgba(255, 255, 255, 0.3)' }}>
-                        第 {w.wonAtRound} 轮
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span style={{ color: 'rgba(255, 255, 255, 0.3)' }}>
+                          第{w.wonAtRound}轮
+                        </span>
+                        <button
+                          onClick={() => removeWinner(w.id)}
+                          className="w-5 h-5 rounded flex items-center justify-center cursor-pointer transition-all hover:brightness-150"
+                          style={{
+                            background: 'rgba(255, 80, 80, 0.15)',
+                            color: 'rgba(255, 80, 80, 0.7)',
+                            fontSize: '11px',
+                          }}
+                          title="撤销中奖（不在现场则重抽）"
+                        >
+                          ×
+                        </button>
+                      </div>
                     </div>
                   ))
                 )}
               </div>
+              {winners.length > 0 && (
+                <p className="text-xs mt-1" style={{ color: 'rgba(255, 255, 255, 0.25)' }}>
+                  点击 × 可撤销中奖（如来宾不在现场）
+                </p>
+              )}
             </div>
 
             {/* Reset */}

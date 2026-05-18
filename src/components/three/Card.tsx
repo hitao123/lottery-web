@@ -30,6 +30,8 @@ export const Card = forwardRef<THREE.Group, CardProps>(
         floatAmplitude: 0.1 + Math.random() * 0.2,
         floatOffset: Math.random() * Math.PI * 2,
         breathOffset: Math.random() * Math.PI * 2,
+        orbitSpeed: (Math.random() - 0.5) * 0.4,
+        orbitAxis: Math.random() * Math.PI,
       }),
       []
     )
@@ -42,7 +44,7 @@ export const Card = forwardRef<THREE.Group, CardProps>(
       if (phase === 'idle') {
         // Slow Y rotation
         mesh.rotation.y += randoms.rotSpeed * 0.01
-        // Floating motion
+        // Floating motion (only vertical, keep x/z stable)
         mesh.position.y =
           position[1] +
           Math.sin(t * randoms.floatSpeed + randoms.floatOffset) * randoms.floatAmplitude
@@ -52,15 +54,20 @@ export const Card = forwardRef<THREE.Group, CardProps>(
             0.1 + Math.sin(t * 0.8 + randoms.breathOffset) * 0.05
         }
       } else if (phase === 'spinning') {
-        // Faster rotation
-        mesh.rotation.y += randoms.rotSpeed * 0.05
-        mesh.rotation.x += randoms.rotSpeed * 0.02
-        // Move slightly toward center
-        mesh.position.x *= 0.998
-        mesh.position.y *= 0.998
-        mesh.position.z *= 0.998
+        // Faster rotation around own axis
+        mesh.rotation.y += randoms.rotSpeed * 0.08
+        mesh.rotation.x += randoms.rotSpeed * 0.03
+        // Orbital motion around original position (not toward center!)
+        const orbitRadius = 0.5
+        mesh.position.x = position[0] + Math.sin(t * 2 + randoms.floatOffset) * orbitRadius
+        mesh.position.y = position[1] + Math.cos(t * 1.5 + randoms.orbitAxis) * orbitRadius
+        mesh.position.z = position[2] + Math.sin(t * 1.8 + randoms.breathOffset) * orbitRadius * 0.5
+        // Increase glow
+        if (materialRef.current) {
+          materialRef.current.emissiveIntensity = 0.2
+        }
       }
-      // CHASING, LOCKING, REVEALED phases are driven by GSAP timeline
+      // CHASING, LOCKING, REVEALED: driven by GSAP timeline (no useFrame interference)
     })
 
     return (

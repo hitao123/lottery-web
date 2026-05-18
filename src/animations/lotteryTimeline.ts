@@ -1,6 +1,5 @@
 import gsap from 'gsap'
 import * as THREE from 'three'
-import { createChasePath } from './cameraAnimations'
 import { scatterCards, lockWinnerCard, scaleWinnerCard, rotateToFaceCamera } from './cardAnimations'
 import { TIMING } from '@/utils/constants'
 
@@ -34,22 +33,28 @@ export function createLotteryTimeline({
 
   // Get card positions for chase path
   const cardPositions = cards.map((c) => c.position.clone())
-  const chasePath = createChasePath(cardPositions, 5)
+
+  // Pick 4-5 random cards to "visit" during chase, end with one near winner
+  const visitIndices = pickChaseTargets(cards.length, winnerIndex, 4)
 
   // ═══════════════════════════════════════════════
   // PHASE 1: SPINNING (0s - 2s)
-  // Camera dolly in, cards accelerate (handled by useFrame via phase)
+  // Camera orbit accelerates — stays at same distance but rotates faster
   // ═══════════════════════════════════════════════
   master.addLabel('spinning', 0)
 
+  const startPos = camera.position.clone()
+  const orbitRadius = Math.sqrt(startPos.x * startPos.x + startPos.z * startPos.z)
+
+  // Camera does a faster orbit during spinning (no dolly in)
   master.to(
     camera.position,
     {
-      x: camera.position.x * 0.7,
-      y: camera.position.y * 0.7,
-      z: camera.position.z * 0.7,
+      x: -startPos.x * 0.8,
+      z: -startPos.z * 0.8,
+      y: startPos.y + 2,
       duration: TIMING.spinningDuration,
-      ease: 'power2.in',
+      ease: 'power1.in',
       onUpdate: () => camera.lookAt(0, 0, 0),
     },
     'spinning'
@@ -57,26 +62,31 @@ export function createLotteryTimeline({
 
   // ═══════════════════════════════════════════════
   // PHASE 2: CHASING (2s - 6s)
-  // Camera flies through multiple card positions
+  // Camera flies past multiple cards (stays OUTSIDE the sphere)
   // ═══════════════════════════════════════════════
   master.addLabel('chasing', TIMING.spinningDuration)
-
   master.call(() => onPhaseChange('chasing'), [], 'chasing')
 
-  const chaseDuration = TIMING.chasingDuration / chasePath.length
-  chasePath.forEach((pos, i) => {
+  const chaseDuration = TIMING.chasingDuration / visitIndices.length
+
+  visitIndices.forEach((cardIdx, i) => {
+    const cardPos = cardPositions[cardIdx]
+    // Camera position: same direction as card but further out from center
+    const dir = cardPos.clone().normalize()
+    const cameraTarget = dir.multiplyScalar(orbitRadius * 0.95)
+    // Look at the card
+    const lookTarget = cardPos.clone()
+
     const startTime = TIMING.spinningDuration + i * chaseDuration
     master.to(
       camera.position,
       {
-        x: pos.x,
-        y: pos.y,
-        z: pos.z,
-        duration: chaseDuration * 0.8,
-        ease: 'power2.inOut',
+        x: cameraTarget.x,
+        y: cameraTarget.y,
+        z: cameraTarget.z,
+        duration: chaseDuration * 0.85,
+        ease: i === visitIndices.length - 1 ? 'power3.out' : 'power2.inOut',
         onUpdate: () => {
-          // Look toward the card we're visiting
-          const lookTarget = cardPositions[Math.min(i, cardPositions.length - 1)]
           camera.lookAt(lookTarget)
         },
       },
@@ -86,20 +96,19 @@ export function createLotteryTimeline({
 
   // ═══════════════════════════════════════════════
   // PHASE 3: LOCKING (6s - 8s)
-  // Winner card locks to center, others scatter
+  // Winner card locks to center, others scatter, camera pulls back
   // ═══════════════════════════════════════════════
   const lockStart = TIMING.spinningDuration + TIMING.chasingDuration
   master.addLabel('locking', lockStart)
-
   master.call(() => onPhaseChange('locking'), [], 'locking')
 
-  // Camera moves to viewing position
+  // Camera moves to front viewing position
   master.to(
     camera.position,
     {
       x: 0,
       y: 0,
-      z: 10,
+      z: 12,
       duration: TIMING.lockingDuration,
       ease: 'power3.out',
       onUpdate: () => camera.lookAt(0, 0, 0),
@@ -107,19 +116,45 @@ export function createLotteryTimeline({
     'locking'
   )
 
-  // Winner card moves to center
+  // Winner card moves to center, facing camera
   master.add(lockWinnerCard(winnerCard, TIMING.lockingDuration), 'locking')
   master.add(rotateToFaceCamera(winnerCard, TIMING.lockingDuration * 0.8), 'locking')
-  master.add(scaleWinnerCard(winnerCard, TIMING.lockingDuration), `locking+=${TIMING.lockingDuration * 0.3}`)
+  master.add(
+    scaleWinnerCard(winnerCard, TIMING.lockingDuration),
+    `locking+=${TIMING.lockingDuration * 0.3}`
+  )
 
-  // Other cards scatter
+  // Other cards scatter outward
   master.add(scatterCards(cards, winnerIndex, TIMING.lockingDuration), 'locking')
 
   // ═══════════════════════════════════════════════
   // PHASE 4: REVEALED (8s+)
-  // Winner card gentle float, triggered by onComplete
+  // Triggered by onComplete
   // ═══════════════════════════════════════════════
   master.addLabel('revealed', lockStart + TIMING.lockingDuration)
 
   return master
+}
+
+/**
+ * Pick random card indices to visit during chase, ending near the winner
+ */
+function pickChaseTargets(totalCards: number, winnerIndex: number, count: number): number[] {
+  const indices: number[] = []
+  const used = new Set<number>()
+  used.add(winnerIndex)
+
+  while (indices.length < count - 1 && indices.length < totalCards - 1) {
+    const idx = Math.floor(Math.random() * totalCards)
+    if (!used.has(idx)) {
+      used.add(idx)
+      indices.push(idx)
+    }
+  }
+
+  // Last visit is a card near the winner (for dramatic approach)
+  const nearWinner = (winnerIndex + 1) % totalCards
+  indices.push(nearWinner)
+
+  return indices
 }

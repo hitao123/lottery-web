@@ -40,6 +40,8 @@ export const useLotteryStore = create<LotteryStore>((set, get) => ({
   confirmWinner: () => {
     const { currentWinner, guests, winners, currentRound } = get()
     if (!currentWinner) return
+    // Prevent double-confirm
+    if (winners.some((w) => w.id === currentWinner.id)) return
     const updatedGuests = guests.map((g) =>
       g.id === currentWinner.id
         ? { ...g, hasWon: true, wonAtRound: currentRound }
@@ -48,6 +50,19 @@ export const useLotteryStore = create<LotteryStore>((set, get) => ({
     set({
       guests: updatedGuests,
       winners: [...winners, { ...currentWinner, hasWon: true, wonAtRound: currentRound }],
+    })
+  },
+
+  removeWinner: (guestId: number) => {
+    const { guests, winners } = get()
+    // Mark guest as not won, remove from winners list
+    const updatedGuests = guests.map((g) =>
+      g.id === guestId ? { ...g, hasWon: false, wonAtRound: undefined } : g
+    )
+    const updatedWinners = winners.filter((w) => w.id !== guestId)
+    set({
+      guests: updatedGuests,
+      winners: updatedWinners,
     })
   },
 

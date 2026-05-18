@@ -58,7 +58,13 @@ export function CardField() {
       camera,
       cards,
       winnerIndex,
-      onPhaseChange: (p: string) => setPhase(p as LotteryPhase),
+      onPhaseChange: (p: string) => {
+        setPhase(p as LotteryPhase)
+        // Auto-confirm winner when reaching revealed phase
+        if (p === 'revealed') {
+          useLotteryStore.getState().confirmWinner()
+        }
+      },
     })
 
     timelineRef.current = timeline
