@@ -1,24 +1,28 @@
 // Color Palette — Korean minimalist + gold luxury
 export const COLORS = {
-  spaceDeep: '#050510',
-  spaceMid: '#0d0d2b',
-  gold: '#c9a96e',
-  goldLight: '#e8d5a3',
-  goldBright: '#ffd700',
-  cream: '#f5f0e8',
-  glassBg: 'rgba(255, 255, 255, 0.04)',
-  glassBorder: 'rgba(201, 169, 110, 0.35)',
-  glassBorderHover: 'rgba(201, 169, 110, 0.8)',
+  spaceDeep: '#120406',
+  spaceMid: '#2a0b11',
+  ruby: '#611017',
+  rose: '#bf4348',
+  gold: '#d5a64a',
+  goldLight: '#f6dd9a',
+  goldBright: '#ffe6a9',
+  cream: '#fff5e4',
+  glassBg: 'rgba(81, 17, 24, 0.16)',
+  glassBorder: 'rgba(231, 191, 98, 0.42)',
+  glassBorderHover: 'rgba(255, 223, 140, 0.92)',
 } as const
 
 // Three.js color values (hex numbers)
 export const COLORS_HEX = {
-  spaceDeep: 0x050510,
-  spaceMid: 0x0d0d2b,
-  gold: 0xc9a96e,
-  goldLight: 0xe8d5a3,
-  goldBright: 0xffd700,
-  cream: 0xf5f0e8,
+  spaceDeep: 0x120406,
+  spaceMid: 0x2a0b11,
+  ruby: 0x611017,
+  rose: 0xbf4348,
+  gold: 0xd5a64a,
+  goldLight: 0xf6dd9a,
+  goldBright: 0xffe6a9,
+  cream: 0xfff5e4,
 } as const
 
 // Card dimensions — taller, thinner, more elegant
@@ -27,6 +31,7 @@ export const CARD = {
   height: 1.5,
   depth: 0.005,
   borderRadius: 0.04,
+  opacity: 0.92,
 } as const
 
 // Animation timing (seconds)
@@ -49,14 +54,48 @@ export const SCENE = {
   starCount: 2000,
   starDepth: 100,
   goldParticleCount: 400,
-  heartParticleCount: 30,
+  heartParticleCount: 72,
 } as const
 
-// Bloom settings per phase — more subtle
-export const BLOOM = {
-  idle: { intensity: 0.3, luminanceThreshold: 0.9 },
-  spinning: { intensity: 0.6, luminanceThreshold: 0.7 },
-  chasing: { intensity: 0.8, luminanceThreshold: 0.6 },
-  locking: { intensity: 1.2, luminanceThreshold: 0.4 },
-  revealed: { intensity: 0.8, luminanceThreshold: 0.6 },
+export const POSTPROCESSING = {
+  idle: {
+    bloomIntensity: 0.28,
+    bloomRadius: 0.72,
+    chromaticOffset: [0.0003, 0.00015] as const,
+    luminanceThreshold: 0.92,
+    noiseOpacity: 0.02,
+    vignetteDarkness: 0.68,
+  },
+  spinning: {
+    bloomIntensity: 0.62,
+    bloomRadius: 0.82,
+    chromaticOffset: [0.0009, 0.00035] as const,
+    luminanceThreshold: 0.72,
+    noiseOpacity: 0.04,
+    vignetteDarkness: 0.74,
+  },
+  chasing: {
+    bloomIntensity: 0.9,
+    bloomRadius: 0.9,
+    chromaticOffset: [0.0016, 0.00065] as const,
+    luminanceThreshold: 0.58,
+    noiseOpacity: 0.055,
+    vignetteDarkness: 0.79,
+  },
+  locking: {
+    bloomIntensity: 1.45,
+    bloomRadius: 0.98,
+    chromaticOffset: [0.0025, 0.001] as const,
+    luminanceThreshold: 0.34,
+    noiseOpacity: 0.075,
+    vignetteDarkness: 0.84,
+  },
+  revealed: {
+    bloomIntensity: 1.02,
+    bloomRadius: 0.88,
+    chromaticOffset: [0.0011, 0.0004] as const,
+    luminanceThreshold: 0.5,
+    noiseOpacity: 0.03,
+    vignetteDarkness: 0.76,
+  },
 } as const

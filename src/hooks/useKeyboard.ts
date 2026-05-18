@@ -23,10 +23,16 @@ export function useKeyboard({ onToggleFullscreen }: UseKeyboardOptions) {
       switch (e.code) {
         case 'Space': {
           if (phase === 'idle') {
-            // Trigger draw via global function exposed by CardField
-            const startFn = (window as unknown as Record<string, unknown>).__lotteryStartDraw
+            // Start spinning (no winner selected yet)
+            const startFn = (window as unknown as Record<string, unknown>).__lotteryStartSpin
             if (typeof startFn === 'function') {
               (startFn as () => void)()
+            }
+          } else if (phase === 'spinning') {
+            // Stop! Select winner NOW and play lock animation
+            const stopFn = (window as unknown as Record<string, unknown>).__lotteryStopSpin
+            if (typeof stopFn === 'function') {
+              (stopFn as () => void)()
             }
           }
           break
@@ -39,7 +45,6 @@ export function useKeyboard({ onToggleFullscreen }: UseKeyboardOptions) {
         }
         case 'KeyN': {
           if (phase === 'revealed') {
-            // Reset cards and go to next round
             const resetFn = (window as unknown as Record<string, unknown>).__lotteryResetCards
             if (typeof resetFn === 'function') {
               (resetFn as () => void)()
@@ -63,7 +68,6 @@ export function useKeyboard({ onToggleFullscreen }: UseKeyboardOptions) {
           break
         }
         case 'Escape': {
-          // Future: cancel ongoing draw
           break
         }
       }

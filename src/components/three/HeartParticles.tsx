@@ -2,7 +2,7 @@ import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useLotteryStore } from '@/store/useLotteryStore'
-import { COLORS_HEX } from '@/utils/constants'
+import { COLORS_HEX, SCENE } from '@/utils/constants'
 
 /**
  * Heart-shaped particles that burst outward during the REVEALED phase.
@@ -10,7 +10,7 @@ import { COLORS_HEX } from '@/utils/constants'
 export function HeartParticles() {
   const pointsRef = useRef<THREE.Points>(null)
   const phase = useLotteryStore((s) => s.phase)
-  const count = 40
+  const count = SCENE.heartParticleCount
 
   // Pre-compute particle data
   const { positions, velocities, lifetimes } = useMemo(() => {
@@ -26,11 +26,10 @@ export function HeartParticles() {
 
       // Random outward velocity
       const theta = Math.random() * Math.PI * 2
-      const phi = Math.random() * Math.PI
-      const speed = 2 + Math.random() * 4
-      velocities[i * 3] = Math.sin(phi) * Math.cos(theta) * speed
-      velocities[i * 3 + 1] = Math.sin(phi) * Math.sin(theta) * speed + 2 // bias upward
-      velocities[i * 3 + 2] = Math.cos(phi) * speed * 0.3
+      const radius = 2.4 + Math.random() * 3.6
+      velocities[i * 3] = Math.cos(theta) * radius * (0.7 + Math.random() * 0.5)
+      velocities[i * 3 + 1] = 2.2 + Math.random() * 2.6
+      velocities[i * 3 + 2] = Math.sin(theta) * radius * (0.25 + Math.random() * 0.55)
 
       lifetimes[i] = 0
     }
@@ -41,7 +40,7 @@ export function HeartParticles() {
   const startTimeRef = useRef<number>(0)
   const activeRef = useRef(false)
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     if (!pointsRef.current) return
 
     // Activate particles when entering revealed/locking phase
@@ -54,6 +53,12 @@ export function HeartParticles() {
         positions[i * 3 + 1] = 0
         positions[i * 3 + 2] = 4
         lifetimes[i] = 0
+
+        const theta = Math.random() * Math.PI * 2
+        const radius = 2.4 + Math.random() * 3.6
+        velocities[i * 3] = Math.cos(theta) * radius * (0.7 + Math.random() * 0.5)
+        velocities[i * 3 + 1] = 2.2 + Math.random() * 2.6
+        velocities[i * 3 + 2] = Math.sin(theta) * radius * (0.25 + Math.random() * 0.55)
       }
     }
 
@@ -68,30 +73,35 @@ export function HeartParticles() {
 
     pointsRef.current.visible = true
     const elapsed = state.clock.elapsedTime - startTimeRef.current
-    const dt = 0.016 // Approximate frame time
+    const dt = Math.min(delta, 0.033)
+    let aliveCount = 0
 
     for (let i = 0; i < count; i++) {
       lifetimes[i] += dt
       const life = lifetimes[i]
 
-      if (life > 3) continue // Particle expired
+      if (life > 2.8) continue // Particle expired
+      aliveCount += 1
 
-      // Update position with velocity and gravity
-      positions[i * 3] += velocities[i * 3] * dt
-      positions[i * 3 + 1] += velocities[i * 3 + 1] * dt - 0.5 * dt // gravity
-      positions[i * 3 + 2] += velocities[i * 3 + 2] * dt
+      const spiral = 1 + Math.sin(life * 7 + i * 0.6) * 0.35
+      positions[i * 3] += velocities[i * 3] * dt * spiral
+      positions[i * 3 + 1] += velocities[i * 3 + 1] * dt - 0.9 * dt
+      positions[i * 3 + 2] += velocities[i * 3 + 2] * dt * 0.9
 
-      // Slow down over time
-      velocities[i * 3] *= 0.99
-      velocities[i * 3 + 1] *= 0.99
-      velocities[i * 3 + 2] *= 0.99
+      velocities[i * 3] *= 0.985
+      velocities[i * 3 + 1] *= 0.985
+      velocities[i * 3 + 2] *= 0.988
     }
 
     pointsRef.current.geometry.attributes.position.needsUpdate = true
 
-    // Fade out after 3 seconds
     const material = pointsRef.current.material as THREE.PointsMaterial
-    material.opacity = Math.max(0, 1 - elapsed / 3)
+    material.opacity = Math.max(0, 0.95 - elapsed / 2.8)
+    material.size = 0.13 + Math.sin(elapsed * 6) * 0.02
+
+    if (aliveCount === 0 && phase === 'revealed') {
+      pointsRef.current.visible = false
+    }
   })
 
   return (

@@ -16,14 +16,22 @@ export function WinnerReveal() {
           transition={{ type: 'spring', stiffness: 200, damping: 20 }}
           className="absolute inset-0 flex items-center justify-center pointer-events-none z-20"
         >
-          <div className="text-center">
+          <div
+            className="text-center px-12 py-10 rounded-[30px]"
+            style={{
+              background: 'linear-gradient(180deg, rgba(96, 25, 34, 0.76) 0%, rgba(21, 6, 10, 0.9) 100%)',
+              border: '1px solid rgba(246, 221, 154, 0.34)',
+              boxShadow:
+                '0 24px 90px rgba(0, 0, 0, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 90px rgba(213, 166, 74, 0.16)',
+            }}
+          >
             {/* Top decoration */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
               className="text-sm tracking-[0.3em] mb-4"
-              style={{ color: 'rgba(255, 215, 0, 0.7)' }}
+              style={{ color: 'rgba(255, 230, 173, 0.86)' }}
             >
               第 {currentRound} 轮
             </motion.div>
@@ -34,9 +42,9 @@ export function WinnerReveal() {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2, type: 'spring', stiffness: 150 }}
               className="text-2xl mb-6 tracking-wider"
-              style={{ color: 'rgba(255, 248, 231, 0.9)' }}
+              style={{ color: 'rgba(255, 244, 226, 0.96)' }}
             >
-              🎉 幸运来宾 🎉
+              喜宴幸运嘉宾
             </motion.div>
 
             {/* Winner number - big and prominent */}
@@ -46,8 +54,8 @@ export function WinnerReveal() {
               transition={{ delay: 0.4, type: 'spring', stiffness: 120, damping: 12 }}
               className="text-7xl font-bold mb-6 tracking-wider"
               style={{
-                color: '#d4af37',
-                textShadow: '0 0 30px rgba(212, 175, 55, 0.5), 0 0 60px rgba(212, 175, 55, 0.2)',
+                color: '#ffe1a0',
+                textShadow: '0 0 28px rgba(213, 166, 74, 0.58), 0 0 62px rgba(213, 166, 74, 0.24)',
               }}
             >
               NO.{currentWinner.code}
@@ -59,7 +67,7 @@ export function WinnerReveal() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
               className="text-lg tracking-[0.2em]"
-              style={{ color: 'rgba(255, 255, 255, 0.5)' }}
+              style={{ color: 'rgba(255, 235, 205, 0.68)' }}
             >
               恭喜中奖
             </motion.div>
@@ -70,7 +78,7 @@ export function WinnerReveal() {
               animate={{ opacity: 1 }}
               transition={{ delay: 1.2 }}
               className="mt-12 text-xs tracking-wider"
-              style={{ color: 'rgba(255, 255, 255, 0.3)' }}
+              style={{ color: 'rgba(255, 239, 219, 0.42)' }}
             >
               按 N 进入下一轮
             </motion.div>

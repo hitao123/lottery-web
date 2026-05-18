@@ -15,7 +15,7 @@ export function LotteryScene() {
         left: 0,
         width: '100%',
         height: '100%',
-        background: '#050510',
+        background: 'radial-gradient(circle at 50% 12%, #6c251f 0%, #25070c 42%, #050203 100%)',
       }}
       dpr={[1, 1.5]}
     >
