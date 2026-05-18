@@ -1,11 +1,13 @@
 import { StarField } from '@/components/three/StarField'
 import { GoldParticles } from '@/components/three/GoldParticles'
+import { HeartParticles } from '@/components/three/HeartParticles'
 
 export function Environment() {
   return (
     <group>
       <StarField />
       <GoldParticles />
+      <HeartParticles />
       {/* Ambient fill light */}
       <ambientLight intensity={0.2} color={0x4444ff} />
       {/* Key light - warm gold */}

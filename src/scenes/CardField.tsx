@@ -34,10 +34,16 @@ export function CardField() {
     [cardData]
   )
 
-  // Start draw - triggered externally via store subscription
+  // Start draw - triggered externally via keyboard
   const startDraw = useCallback(() => {
+    const { phase } = useLotteryStore.getState()
+    if (phase !== 'idle') return
+
     const winner = selectWinner()
     if (!winner) return
+
+    // Set spinning phase immediately
+    setPhase('spinning')
 
     const winnerIndex = guests.findIndex((g) => g.id === winner.id)
     const cards = cardRefs.current.filter((ref): ref is THREE.Group => ref !== null)
@@ -59,8 +65,7 @@ export function CardField() {
     timeline.play()
   }, [camera, guests, selectWinner, setPhase])
 
-  // Expose startDraw via a custom event for the keyboard hook
-  // We use a global ref approach here
+  // Expose startDraw via a global ref for the keyboard hook
   useMemo(() => {
     ;(window as unknown as Record<string, unknown>).__lotteryStartDraw = startDraw
     ;(window as unknown as Record<string, unknown>).__lotteryResetCards = () => {
@@ -77,6 +82,12 @@ export function CardField() {
         if (initialPositions[i]) {
           card.position.set(...initialPositions[i])
         }
+        // Reset rotation to something random
+        card.rotation.set(
+          (Math.random() - 0.5) * 0.3,
+          Math.random() * Math.PI * 2,
+          (Math.random() - 0.5) * 0.2
+        )
       })
     }
   }, [startDraw, initialPositions])

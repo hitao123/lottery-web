@@ -6,14 +6,15 @@ interface UseKeyboardOptions {
 }
 
 export function useKeyboard({ onToggleFullscreen }: UseKeyboardOptions) {
-  const phase = useLotteryStore((s) => s.phase)
-  const setPhase = useLotteryStore((s) => s.setPhase)
-  const nextRound = useLotteryStore((s) => s.nextRound)
-  const confirmWinner = useLotteryStore((s) => s.confirmWinner)
-  const reset = useLotteryStore((s) => s.reset)
-
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't intercept when typing in inputs
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return
+      }
+
+      const { phase } = useLotteryStore.getState()
+
       // Prevent default for our shortcuts
       if (['Space', 'Enter', 'KeyN', 'KeyF', 'KeyR', 'Escape'].includes(e.code)) {
         e.preventDefault()
@@ -23,18 +24,16 @@ export function useKeyboard({ onToggleFullscreen }: UseKeyboardOptions) {
         case 'Space': {
           if (phase === 'idle') {
             // Trigger draw via global function exposed by CardField
-            setPhase('spinning')
             const startFn = (window as unknown as Record<string, unknown>).__lotteryStartDraw
             if (typeof startFn === 'function') {
-              startFn()
+              (startFn as () => void)()
             }
           }
           break
         }
         case 'Enter': {
           if (phase === 'revealed') {
-            confirmWinner()
-            // Stay in revealed state until N is pressed
+            useLotteryStore.getState().confirmWinner()
           }
           break
         }
@@ -43,9 +42,9 @@ export function useKeyboard({ onToggleFullscreen }: UseKeyboardOptions) {
             // Reset cards and go to next round
             const resetFn = (window as unknown as Record<string, unknown>).__lotteryResetCards
             if (typeof resetFn === 'function') {
-              resetFn()
+              (resetFn as () => void)()
             }
-            nextRound()
+            useLotteryStore.getState().nextRound()
           }
           break
         }
@@ -57,9 +56,9 @@ export function useKeyboard({ onToggleFullscreen }: UseKeyboardOptions) {
           if (phase === 'idle' || phase === 'revealed') {
             const resetFn = (window as unknown as Record<string, unknown>).__lotteryResetCards
             if (typeof resetFn === 'function') {
-              resetFn()
+              (resetFn as () => void)()
             }
-            reset()
+            useLotteryStore.getState().reset()
           }
           break
         }
@@ -72,5 +71,5 @@ export function useKeyboard({ onToggleFullscreen }: UseKeyboardOptions) {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [phase, setPhase, nextRound, confirmWinner, reset, onToggleFullscreen])
+  }, [onToggleFullscreen])
 }
