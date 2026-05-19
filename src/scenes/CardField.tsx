@@ -7,6 +7,13 @@ import { useLotteryStore } from '@/store/useLotteryStore'
 import { fibonacciSphere, randomRotation } from '@/utils/distributions'
 import { SCENE } from '@/utils/constants'
 import { createLotteryTimeline } from '@/animations/lotteryTimeline'
+import {
+  startBackgroundMusic,
+  stopBackgroundMusic,
+  playChasingSound,
+  playLockingSound,
+  playRevealSound,
+} from '@/utils/audio'
 import type { LotteryPhase } from '@/types'
 
 type LayoutGuest = {
@@ -104,6 +111,7 @@ export function CardField() {
   )
 
   const resetCards = useCallback(() => {
+    stopBackgroundMusic()
     if (timelineRef.current) {
       timelineRef.current.kill()
       timelineRef.current = null
@@ -135,17 +143,20 @@ export function CardField() {
     camera.updateProjectionMatrix()
   }, [camera, cardData.length, initialTransforms])
 
-  // Start spinning — no winner yet, just visual acceleration
+  // Start spinning — no winner yet, just visual acceleration + music
   const startSpin = useCallback(() => {
     const { phase } = useLotteryStore.getState()
     if (phase !== 'idle') return
     setPhase('spinning')
+    startBackgroundMusic()
   }, [setPhase])
 
   // Stop spinning — NOW select winner and play lock animation
   const stopSpin = useCallback(() => {
     const { phase } = useLotteryStore.getState()
     if (phase !== 'spinning') return
+
+    stopBackgroundMusic()
 
     const cards = cardRefs.current
       .slice(0, cardData.length)
@@ -160,6 +171,7 @@ export function CardField() {
 
     // Transition to chasing immediately
     setPhase('chasing')
+    playChasingSound()
 
     // Kill existing timeline
     if (timelineRef.current) {
@@ -172,7 +184,11 @@ export function CardField() {
       winnerIndex,
       onPhaseChange: (p: string) => {
         setPhase(p as LotteryPhase)
+        if (p === 'locking') {
+          playLockingSound()
+        }
         if (p === 'revealed') {
+          playRevealSound()
           useLotteryStore.getState().confirmWinner()
         }
       },
