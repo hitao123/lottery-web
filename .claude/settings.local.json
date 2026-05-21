@@ -4,7 +4,12 @@
       "Bash(npx tsc *)",
       "Bash(npx vite *)",
       "Bash(git add *)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(gh repo *)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(cat)",
+      "Read(//tmp/**)"
     ]
   }
 }

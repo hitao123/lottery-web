@@ -14,10 +14,10 @@ const cardGeometry = new THREE.PlaneGeometry(CARD.width, CARD.height)
 const cardMaterialProps = {
   transparent: true,
   opacity: CARD.opacity,
-  roughness: 0.42,
-  metalness: 0.28,
+  roughness: 0.35,
+  metalness: 0.4,
   emissive: COLORS_HEX.gold,
-  emissiveIntensity: 0.05,
+  emissiveIntensity: 0.04,
   side: THREE.DoubleSide,
 } as const
 

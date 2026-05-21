@@ -8,6 +8,10 @@ function getCardMaterial(card: THREE.Group) {
   return mesh.material instanceof THREE.MeshStandardMaterial ? mesh.material : null
 }
 
+/**
+ * Flash a card with scale punch and emissive burst.
+ * Scale punch is proportional to intensity — higher intensity = bigger punch.
+ */
 export function flashCard(
   card: THREE.Group,
   duration: number = 0.35,
@@ -16,14 +20,17 @@ export function flashCard(
   const tl = gsap.timeline()
   const material = getCardMaterial(card)
 
+  // Scale punch proportional to intensity (low=1.06, high=1.2)
+  const scaleFactor = 1.0 + peakEmissive * 0.4
+
   tl.to(
     card.scale,
     {
-      x: 1.1,
-      y: 1.1,
-      z: 1.1,
-      duration: duration * 0.45,
-      ease: 'power2.out',
+      x: scaleFactor,
+      y: scaleFactor,
+      z: scaleFactor,
+      duration: duration * 0.4,
+      ease: 'power3.out',
       yoyo: true,
       repeat: 1,
     },
@@ -36,8 +43,8 @@ export function flashCard(
       {
         emissiveIntensity: peakEmissive,
         opacity: 1,
-        duration: duration * 0.35,
-        ease: 'power2.out',
+        duration: duration * 0.3,
+        ease: 'power3.out',
         yoyo: true,
         repeat: 1,
       },
@@ -49,12 +56,13 @@ export function flashCard(
 }
 
 /**
- * Scatter all cards outward from center, except the winner
+ * Scatter all cards outward from center, except the winner.
+ * Fast and explosive for the "slam" moment.
  */
 export function scatterCards(
   cards: THREE.Group[],
   winnerIndex: number,
-  duration: number = 1.5
+  duration: number = 0.8
 ): gsap.core.Timeline {
   const tl = gsap.timeline()
 
@@ -91,7 +99,6 @@ export function scatterCards(
       0
     )
 
-    // Fade out via scale
     tl.to(
       card.scale,
       {
@@ -110,7 +117,7 @@ export function scatterCards(
         {
           opacity: 0.008,
           emissiveIntensity: 0,
-          duration: duration * 0.85,
+          duration: duration * 0.8,
           ease: 'power3.out',
         },
         0
@@ -122,61 +129,62 @@ export function scatterCards(
 }
 
 /**
- * Lock the winner card to center position facing camera
+ * Lock the winner card to center — "slam" effect.
+ * Uses power4.in for acceleration, then back.out for overshoot-settle.
  */
 export function lockWinnerCard(
   card: THREE.Group,
-  duration: number = 1.5
+  duration: number = 0.8
 ): gsap.core.Tween {
   return gsap.to(card.position, {
     keyframes: [
       {
         x: 0,
-        y: 0.2,
-        z: 2.8,
-        duration: duration * 0.58,
-        ease: 'power3.in',
+        y: 0.1,
+        z: 3.8,
+        duration: duration * 0.4,
+        ease: 'power4.in',
       },
       {
         x: 0,
         y: 0,
-        z: 4.85,
-        duration: duration * 0.42,
-        ease: 'expo.out',
+        z: 5.65,
+        duration: duration * 0.6,
+        ease: 'back.out(1.4)',
       },
     ],
   })
 }
 
 /**
- * Scale up the winner card
+ * Scale up the winner card with slight overshoot
  */
 export function scaleWinnerCard(
   card: THREE.Group,
-  duration: number = 1
+  duration: number = 0.9
 ): gsap.core.Tween {
   return gsap.to(card.scale, {
     keyframes: [
       {
-        x: 1.18,
-        y: 1.18,
-        z: 1.18,
-        duration: duration * 0.3,
+        x: 1.08,
+        y: 1.08,
+        z: 1.08,
+        duration: duration * 0.25,
         ease: 'power2.out',
       },
       {
-        x: 1.52,
-        y: 1.52,
-        z: 1.52,
+        x: 1.2,
+        y: 1.2,
+        z: 1.2,
         duration: duration * 0.35,
         ease: 'power3.out',
       },
       {
-        x: 1.28,
-        y: 1.28,
-        z: 1.28,
-        duration: duration * 0.35,
-        ease: 'back.out(1.7)',
+        x: 1.14,
+        y: 1.14,
+        z: 1.14,
+        duration: duration * 0.4,
+        ease: 'sine.out',
       },
     ],
   })
@@ -184,7 +192,7 @@ export function scaleWinnerCard(
 
 export function igniteWinnerCard(
   card: THREE.Group,
-  duration: number = 1
+  duration: number = 0.8
 ): gsap.core.Timeline {
   const material = getCardMaterial(card)
   const tl = gsap.timeline()
@@ -193,15 +201,15 @@ export function igniteWinnerCard(
     tl.to(material, {
       keyframes: [
         {
-          emissiveIntensity: 0.45,
+          emissiveIntensity: 0.4,
           opacity: 1,
-          duration: duration * 0.45,
+          duration: duration * 0.4,
           ease: 'power2.out',
         },
         {
-          emissiveIntensity: 0.22,
+          emissiveIntensity: 0.18,
           opacity: CARD.opacity,
-          duration: duration * 0.55,
+          duration: duration * 0.6,
           ease: 'sine.out',
         },
       ],
@@ -212,26 +220,26 @@ export function igniteWinnerCard(
 }
 
 /**
- * Reset card to face camera (rotation)
+ * Rotate winner card to face camera directly
  */
 export function rotateToFaceCamera(
   card: THREE.Group,
-  duration: number = 1
+  duration: number = 0.7
 ): gsap.core.Tween {
   return gsap.to(card.rotation, {
     keyframes: [
       {
-        x: 0.08,
-        y: 0.18,
-        z: -0.05,
-        duration: duration * 0.35,
+        x: 0.03,
+        y: 0.06,
+        z: -0.02,
+        duration: duration * 0.3,
         ease: 'power2.out',
       },
       {
         x: 0,
         y: 0,
         z: 0,
-        duration: duration * 0.65,
+        duration: duration * 0.7,
         ease: 'expo.out',
       },
     ],

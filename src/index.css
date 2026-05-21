@@ -1,1 +1,96 @@
 @import "tailwindcss";
+
+/* ═══════════════════════════════════════════════
+   Noir Luxe — Premium Black + Champagne Gold
+   ═══════════════════════════════════════════════ */
+
+:root {
+  --gold: #c9a84c;
+  --gold-light: #e8d5a3;
+  --gold-bright: #f0d78c;
+  --bg-deep: #0a0a0f;
+  --text-primary: #e8e8e8;
+  --text-muted: rgba(232, 232, 232, 0.45);
+}
+
+/* ═══ Gold Shimmer (text + border) ═══ */
+@keyframes gold-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(201, 168, 76, 0.12), 0 0 60px rgba(201, 168, 76, 0.04);
+  }
+  50% {
+    box-shadow: 0 0 36px rgba(201, 168, 76, 0.24), 0 0 80px rgba(201, 168, 76, 0.08);
+  }
+}
+
+/* ═══ Winner Card — Clean & Premium ═══ */
+.winner-card {
+  position: relative;
+  animation: pulse-glow 3.5s ease-in-out infinite;
+}
+
+.winner-card::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 18px;
+  background: linear-gradient(
+    135deg,
+    var(--gold) 0%,
+    transparent 30%,
+    var(--gold-bright) 50%,
+    transparent 70%,
+    var(--gold) 100%
+  );
+  background-size: 200% 200%;
+  animation: gold-shimmer 4s linear infinite;
+  z-index: -1;
+  opacity: 0.45;
+}
+
+/* ═══ Winner Number — Gold Gradient Text ═══ */
+.winner-number {
+  background: linear-gradient(
+    90deg,
+    #c9a84c 0%,
+    #e8d5a3 20%,
+    #f5f0e0 45%,
+    #e8d5a3 70%,
+    #c9a84c 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gold-shimmer 3s linear infinite;
+}
+
+/* ═══ Title Text — Subtle Gold ═══ */
+.title-text {
+  background: linear-gradient(
+    90deg,
+    #e8d5a3,
+    #f0d78c,
+    #f5f0e0,
+    #f0d78c,
+    #e8d5a3
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gold-shimmer 5s linear infinite;
+}
+
+/* ═══ Glass Surface ═══ */
+.glass-surface {
+  background: rgba(14, 14, 20, 0.75);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(201, 168, 76, 0.2);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+}

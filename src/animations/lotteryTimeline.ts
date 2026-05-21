@@ -20,8 +20,10 @@ interface TimelineOptions {
 /**
  * Creates the GSAP timeline for lock animation AFTER user stops spinning.
  *
- * Flow: CHASING → LOCKING → REVEALED
- * (Spinning is handled by useFrame loop, not by this timeline)
+ * Flow: CHASING (progressive suspense) → LOCKING (slam) → REVEALED
+ *
+ * The chase visits 7 cards with INCREASING pauses — each stop feels
+ * more like "is it this one?" until the final SLAM lock.
  */
 export function createLotteryTimeline({
   camera,
@@ -40,76 +42,107 @@ export function createLotteryTimeline({
   if (!winnerCard) return master
 
   const cardPositions = cards.map((c) => c.position.clone())
-  const visitIndices = pickChaseTargets(cards.length, winnerIndex, 4)
+  const visitCount = TIMING.chaseVisitCount
+  const pauseDurations = TIMING.chasePauses
+  const visitIndices = pickChaseTargets(cards.length, winnerIndex, visitCount)
 
   const startPos = camera.position.clone()
   const orbitRadius = Math.sqrt(startPos.x * startPos.x + startPos.z * startPos.z)
   const perspectiveCamera = camera instanceof THREE.PerspectiveCamera ? camera : null
 
   // ═══════════════════════════════════════════════
-  // PHASE 1: CHASING (0s - 3.5s)
-  // Camera flies past multiple cards, building suspense
+  // PHASE 1: CHASING (0s → ~5s)
+  // Camera visits 7 cards with PROGRESSIVE pauses.
+  // Each stop is longer, building genuine suspense.
   // ═══════════════════════════════════════════════
   master.addLabel('chasing', 0)
 
-  const chaseDuration = TIMING.chasingDuration / visitIndices.length
+  let cumulativeTime = 0
 
   visitIndices.forEach((cardIdx, i) => {
     const cardPos = cardPositions[cardIdx]
     const dir = cardPos.clone().normalize()
-    const cameraTarget = dir.multiplyScalar(orbitRadius * (i === visitIndices.length - 1 ? 0.74 : 0.92))
-    cameraTarget.y += i % 2 === 0 ? 0.8 : -0.6
+    const isLast = i === visitIndices.length - 1
+
+    // Camera gets progressively closer (more intimate zoom each time)
+    const distanceFactor = 0.95 - (i / visitIndices.length) * 0.2 // 0.95 → 0.75
+    const cameraTarget = dir.clone().multiplyScalar(orbitRadius * distanceFactor)
+    cameraTarget.y += (i % 2 === 0 ? 0.6 : -0.4) * (1 - i * 0.06)
     const lookTarget = cardPos.clone()
 
-    const startTime = i * chaseDuration
-    master.add(flashCard(cards[cardIdx], chaseDuration * 0.72, i === visitIndices.length - 1 ? 0.38 : 0.28), startTime)
+    const pauseDuration = pauseDurations[i]
+    // Travel time also increases (momentum dying)
+    const travelTime = 0.15 + i * 0.04 // 0.15s → 0.39s
+
+    const startTime = cumulativeTime
+
+    // Camera movement — easing gets progressively heavier
+    const moveEase = isLast
+      ? 'expo.out'
+      : i > 4
+        ? 'power3.inOut'
+        : 'power2.inOut'
+
     master.to(
       camera.position,
       {
         x: cameraTarget.x,
         y: cameraTarget.y,
         z: cameraTarget.z,
-        duration: chaseDuration * 0.85,
-        ease: i === visitIndices.length - 1 ? 'expo.out' : 'power2.inOut',
-        onUpdate: () => {
-          camera.lookAt(lookTarget)
-        },
+        duration: travelTime,
+        ease: moveEase,
+        onUpdate: () => camera.lookAt(lookTarget),
       },
       startTime
     )
 
+    // Flash effect — progressively MORE dramatic
+    const flashIntensity = 0.12 + (i / visitIndices.length) * 0.4 // 0.12 → 0.52
+    const flashDuration = pauseDuration * 0.8
+    master.add(
+      flashCard(cards[cardIdx], flashDuration, flashIntensity),
+      startTime + travelTime * 0.3
+    )
+
+    // FOV zoom punch — gets heavier each time
     if (perspectiveCamera) {
+      const fovPunch = 2 + i * 1.5 // 2° → 11°
+      const baseFov = 40
       master.to(
         perspectiveCamera,
         {
-          fov: i === visitIndices.length - 1 ? 34 : 38,
-          duration: chaseDuration * 0.5,
+          fov: baseFov - fovPunch,
+          duration: pauseDuration * 0.35,
           ease: 'power2.out',
           yoyo: true,
           repeat: 1,
+          repeatDelay: pauseDuration * 0.15,
           onUpdate: () => perspectiveCamera.updateProjectionMatrix(),
         },
-        startTime
+        startTime + travelTime
       )
     }
+
+    cumulativeTime += travelTime + pauseDuration
   })
 
   // ═══════════════════════════════════════════════
-  // PHASE 2: LOCKING (3.5s - 5.5s)
-  // Winner card locks to center, others scatter
+  // PHASE 2: LOCKING (~5s → ~6s)
+  // SUDDEN STOP — 1 second of pure impact.
+  // Camera snaps, winner slams to center, others explode outward.
   // ═══════════════════════════════════════════════
   const lockStart = TIMING.chasingDuration
   master.addLabel('locking', lockStart)
   master.call(() => onPhaseChange('locking'), [], 'locking')
 
-  // Camera to front viewing position
+  // Camera SNAPS to front — aggressive expo.out (instant deceleration)
   master.to(
     camera.position,
     {
       x: 0,
       y: 0,
-      z: 8.4,
-      duration: TIMING.lockingDuration,
+      z: 8.0,
+      duration: TIMING.lockingDuration * 0.6,
       ease: 'expo.out',
       onUpdate: () => camera.lookAt(0, 0, 0),
     },
@@ -120,8 +153,8 @@ export function createLotteryTimeline({
     master.to(
       perspectiveCamera,
       {
-        fov: 30,
-        duration: TIMING.lockingDuration * 0.75,
+        fov: 28,
+        duration: TIMING.lockingDuration * 0.5,
         ease: 'expo.out',
         onUpdate: () => perspectiveCamera.updateProjectionMatrix(),
       },
@@ -129,21 +162,21 @@ export function createLotteryTimeline({
     )
   }
 
-  // Winner card
-  master.add(flashCard(winnerCard, TIMING.lockingDuration * 0.55, 0.42), 'locking')
-  master.add(lockWinnerCard(winnerCard, TIMING.lockingDuration), 'locking')
-  master.add(rotateToFaceCamera(winnerCard, TIMING.lockingDuration * 0.8), 'locking')
+  // Winner card — fast, impactful lock
+  master.add(flashCard(winnerCard, TIMING.lockingDuration * 0.4, 0.6), 'locking')
+  master.add(lockWinnerCard(winnerCard, TIMING.lockingDuration * 0.8), 'locking')
+  master.add(rotateToFaceCamera(winnerCard, TIMING.lockingDuration * 0.7), 'locking')
   master.add(
-    scaleWinnerCard(winnerCard, TIMING.lockingDuration),
-    `locking+=${TIMING.lockingDuration * 0.3}`
+    scaleWinnerCard(winnerCard, TIMING.lockingDuration * 0.9),
+    `locking+=${TIMING.lockingDuration * 0.15}`
   )
-  master.add(igniteWinnerCard(winnerCard, TIMING.lockingDuration * 0.9), 'locking')
+  master.add(igniteWinnerCard(winnerCard, TIMING.lockingDuration * 0.8), 'locking')
 
-  // Other cards scatter
-  master.add(scatterCards(cards, winnerIndex, TIMING.lockingDuration), 'locking')
+  // Other cards scatter (fast — 0.8s)
+  master.add(scatterCards(cards, winnerIndex, TIMING.lockingDuration * 0.8), 'locking')
 
   // ═══════════════════════════════════════════════
-  // PHASE 3: REVEALED
+  // PHASE 3: REVEALED — brief settle
   // ═══════════════════════════════════════════════
   master.addLabel('revealed', lockStart + TIMING.lockingDuration)
 
@@ -151,8 +184,8 @@ export function createLotteryTimeline({
     master.to(
       perspectiveCamera,
       {
-        fov: 36,
-        duration: TIMING.revealedDelay + 0.35,
+        fov: 34,
+        duration: TIMING.revealedDelay + 0.4,
         ease: 'sine.out',
         onUpdate: () => perspectiveCamera.updateProjectionMatrix(),
       },
@@ -164,13 +197,15 @@ export function createLotteryTimeline({
 }
 
 /**
- * Pick random card indices to visit during chase, ending near the winner
+ * Pick chase targets: random non-winner cards, with the LAST one being the winner.
+ * Maximum drama: you think it might be any of the first 6, then the 7th IS it.
  */
 function pickChaseTargets(totalCards: number, winnerIndex: number, count: number): number[] {
   const indices: number[] = []
   const used = new Set<number>()
   used.add(winnerIndex)
 
+  // Fill (count - 1) random non-winner cards
   while (indices.length < count - 1 && indices.length < totalCards - 1) {
     const idx = Math.floor(Math.random() * totalCards)
     if (!used.has(idx)) {
@@ -179,9 +214,8 @@ function pickChaseTargets(totalCards: number, winnerIndex: number, count: number
     }
   }
 
-  // Last visit is near the winner for dramatic approach
-  const nearWinner = (winnerIndex + 1) % totalCards
-  indices.push(nearWinner)
+  // Last visit IS the winner — maximum suspense
+  indices.push(winnerIndex)
 
   return indices
 }

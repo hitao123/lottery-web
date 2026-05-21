@@ -1,0 +1,273 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 1000">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+      text { font-family: 'JetBrains Mono', 'Noto Sans SC', 'PingFang SC', sans-serif; }
+      .title { font-size: 18px; font-weight: 700; fill: #fbbf24; }
+      .component-label { font-size: 12px; font-weight: 600; fill: #ffffff; }
+      .sublabel { font-size: 9px; font-weight: 400; fill: #94a3b8; }
+      .annotation { font-size: 8px; font-weight: 400; fill: #94a3b8; }
+      .arrow-label { font-size: 8px; font-weight: 500; fill: #fbbf24; }
+    </style>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.5"/>
+    </pattern>
+    <marker id="arrow-gold" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#fbbf24"/>
+    </marker>
+    <marker id="arrow-emerald" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#34d399"/>
+    </marker>
+    <marker id="arrow-cyan" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#22d3ee"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#0f172a"/>
+  <rect width="100%" height="100%" fill="url(#grid)"/>
+
+  <!-- Title -->
+  <text x="650" y="35" text-anchor="middle" class="title">🎰 Wedding Lottery System Architecture</text>
+
+  <!-- ============ REGION: USER INPUT & CONTROL ============ -->
+  <rect x="20" y="60" width="620" height="200" rx="12" fill="none" stroke="#fbbf24" stroke-width="2" stroke-dasharray="8,4"/>
+  <text x="40" y="80" fill="#fbbf24" font-size="11" font-weight="600">USER INPUT & CONTROL LAYER</text>
+
+  <!-- ControlPanel Component -->
+  <rect x="30" y="100" width="180" height="70" rx="6" fill="#0f172a"/>
+  <rect x="30" y="100" width="180" height="70" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="120" y="125" text-anchor="middle" class="component-label">ControlPanel</text>
+  <text x="120" y="140" text-anchor="middle" class="sublabel">Guest Import</text>
+  <text x="120" y="152" text-anchor="middle" class="annotation">(1-200 range)</text>
+
+  <!-- Keyboard Input -->
+  <rect x="240" y="100" width="180" height="70" rx="6" fill="#0f172a"/>
+  <rect x="240" y="100" width="180" height="70" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="330" y="125" text-anchor="middle" class="component-label">useKeyboard</text>
+  <text x="330" y="140" text-anchor="middle" class="sublabel">SPACE: Start/Stop</text>
+  <text x="330" y="152" text-anchor="middle" class="annotation">N: Next, R: Reset</text>
+
+  <!-- HUD Display -->
+  <rect x="450" y="100" width="180" height="70" rx="6" fill="#0f172a"/>
+  <rect x="450" y="100" width="180" height="70" rx="6" fill="rgba(96,25,34,0.4)" stroke="#fb7185" stroke-width="1.5"/>
+  <text x="540" y="125" text-anchor="middle" class="component-label">UI Output</text>
+  <text x="540" y="140" text-anchor="middle" class="sublabel">WinnerReveal Modal</text>
+  <text x="540" y="152" text-anchor="middle" class="annotation">StatusBar</text>
+
+  <!-- Arrow from controls to store -->
+  <path d="M 120 180 Q 120 230, 200 260" fill="none" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrow-gold)"/>
+  <path d="M 330 180 Q 330 230, 300 260" fill="none" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrow-gold)"/>
+  <path d="M 540 180 Q 540 230, 420 260" fill="none" stroke="#fb7185" stroke-width="2" marker-end="url(#arrow-gold)"/>
+
+  <!-- ============ REGION: STATE MANAGEMENT (CENTER) ============ -->
+  <rect x="20" y="280" width="620" height="350" rx="12" fill="none" stroke="#34d399" stroke-width="2" stroke-dasharray="8,4"/>
+  <text x="40" y="300" fill="#34d399" font-size="11" font-weight="600">STATE MANAGEMENT & LOGIC (Zustand Store)</text>
+
+  <!-- State Machine - 5 phases vertically arranged -->
+  <!-- idle -->
+  <rect x="50" y="320" width="140" height="50" rx="6" fill="#0f172a"/>
+  <rect x="50" y="320" width="140" height="50" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+  <text x="120" y="340" text-anchor="middle" class="component-label">idle</text>
+  <text x="120" y="354" text-anchor="middle" class="sublabel">Start state</text>
+
+  <!-- spinning -->
+  <rect x="230" y="320" width="140" height="50" rx="6" fill="#0f172a"/>
+  <rect x="230" y="320" width="140" height="50" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="300" y="340" text-anchor="middle" class="component-label">spinning</text>
+  <text x="300" y="354" text-anchor="middle" class="sublabel">User presses SPACE</text>
+
+  <!-- chasing -->
+  <rect x="410" y="320" width="140" height="50" rx="6" fill="#0f172a"/>
+  <rect x="410" y="320" width="140" height="50" rx="6" fill="rgba(96,25,34,0.4)" stroke="#fb7185" stroke-width="1.5"/>
+  <text x="480" y="340" text-anchor="middle" class="component-label">chasing</text>
+  <text x="480" y="354" text-anchor="middle" class="sublabel">3.5s duration</text>
+
+  <!-- Arrows between phases -->
+  <path d="M 190 345 L 230 345" fill="none" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrow-gold)"/>
+  <text x="210" y="340" text-anchor="middle" class="arrow-label">SPACE</text>
+
+  <path d="M 370 345 L 410 345" fill="none" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrow-gold)"/>
+  <text x="390" y="340" text-anchor="middle" class="arrow-label">SPACE</text>
+
+  <!-- locking -->
+  <rect x="50" y="410" width="140" height="50" rx="6" fill="#0f172a"/>
+  <rect x="50" y="410" width="140" height="50" rx="6" fill="rgba(59,130,246,0.3)" stroke="#60a5fa" stroke-width="1.5"/>
+  <text x="120" y="430" text-anchor="middle" class="component-label">locking</text>
+  <text x="120" y="444" text-anchor="middle" class="sublabel">2.0s duration</text>
+
+  <!-- revealed -->
+  <rect x="230" y="410" width="140" height="50" rx="6" fill="#0f172a"/>
+  <rect x="230" y="410" width="140" height="50" rx="6" fill="rgba(120,53,15,0.4)" stroke="#fbbf24" stroke-width="2"/>
+  <text x="300" y="430" text-anchor="middle" class="component-label">revealed</text>
+  <text x="300" y="444" text-anchor="middle" class="sublabel">Winner shown</text>
+
+  <!-- Phase transitions -->
+  <path d="M 480 375 Q 480 400, 300 410" fill="none" stroke="#60a5fa" stroke-width="2" marker-end="url(#arrow-cyan)"/>
+  <text x="450" y="390" class="arrow-label">auto</text>
+
+  <path d="M 120 370 Q 120 390, 120 410" fill="none" stroke="#60a5fa" stroke-width="2" marker-end="url(#arrow-cyan)"/>
+  <text x="80" y="390" class="arrow-label">auto</text>
+
+  <!-- Winner Selection Box -->
+  <rect x="410" y="410" width="200" height="50" rx="6" fill="#0f172a"/>
+  <rect x="410" y="410" width="200" height="50" rx="6" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="510" y="430" text-anchor="middle" class="component-label">selectWinner()</text>
+  <text x="510" y="444" text-anchor="middle" class="sublabel">Math.random() called here</text>
+
+  <!-- Arrow from spinning to selectWinner -->
+  <path d="M 480 375 Q 510 390, 510 410" fill="none" stroke="#a78bfa" stroke-width="2" stroke-dasharray="5,5" marker-end="url(#arrow-gold)"/>
+  <text x="515" y="393" class="arrow-label">stopSpin()</text>
+
+  <!-- Guest Pool -->
+  <rect x="50" y="500" width="180" height="60" rx="6" fill="#0f172a"/>
+  <rect x="50" y="500" width="180" height="60" rx="6" fill="rgba(6,78,59,0.4)" stroke="#34d399" stroke-width="1.5"/>
+  <text x="140" y="522" text-anchor="middle" class="component-label">guests[]</text>
+  <text x="140" y="538" text-anchor="middle" class="sublabel">available pool</text>
+  <text x="140" y="550" text-anchor="middle" class="annotation">hasWon: false</text>
+
+  <!-- Winners List -->
+  <rect x="260" y="500" width="180" height="60" rx="6" fill="#0f172a"/>
+  <rect x="260" y="500" width="180" height="60" rx="6" fill="rgba(76,29,149,0.4)" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="350" y="522" text-anchor="middle" class="component-label">winners[]</text>
+  <text x="350" y="538" text-anchor="middle" class="sublabel">history</text>
+  <text x="350" y="550" text-anchor="middle" class="annotation">confirmWinner()</text>
+
+  <!-- Current State -->
+  <rect x="470" y="500" width="170" height="60" rx="6" fill="#0f172a"/>
+  <rect x="470" y="500" width="170" height="60" rx="6" fill="rgba(96,25,34,0.4)" stroke="#fb7185" stroke-width="1.5"/>
+  <text x="555" y="522" text-anchor="middle" class="component-label">currentWinner</text>
+  <text x="555" y="538" text-anchor="middle" class="sublabel">round, phase</text>
+  <text x="555" y="550" text-anchor="middle" class="annotation">nextRound()</text>
+
+  <!-- Arrows connecting state data -->
+  <path d="M 140 560 Q 140 470, 140 460" fill="none" stroke="#34d399" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <path d="M 350 560 Q 350 470, 350 460" fill="none" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <path d="M 555 560 Q 555 470, 555 460" fill="none" stroke="#fb7185" stroke-width="1.5" stroke-dasharray="3,3"/>
+
+  <!-- ============ REGION: 3D SCENE & ANIMATION (RIGHT) ============ -->
+  <rect x="680" y="60" width="600" height="570" rx="12" fill="none" stroke="#22d3ee" stroke-width="2" stroke-dasharray="8,4"/>
+  <text x="700" y="80" fill="#22d3ee" font-size="11" font-weight="600">3D SCENE & ANIMATION ENGINE</text>
+
+  <!-- CardField Component -->
+  <rect x="700" y="110" width="280" height="80" rx="6" fill="#0f172a"/>
+  <rect x="700" y="110" width="280" height="80" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="2"/>
+  <text x="840" y="135" text-anchor="middle" class="component-label">CardField</text>
+  <text x="840" y="151" text-anchor="middle" class="sublabel">100+ 3D Cards (Three.js)</text>
+  <text x="840" y="163" text-anchor="middle" class="annotation">Position: fibonacciSphere()</text>
+  <text x="840" y="173" text-anchor="middle" class="annotation">Motion: randomized per card</text>
+
+  <!-- useFrame Loop -->
+  <rect x="1020" y="110" width="240" height="80" rx="6" fill="#0f172a"/>
+  <rect x="1020" y="110" width="240" height="80" rx="6" fill="rgba(76,29,149,0.3)" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="1140" y="135" text-anchor="middle" class="component-label">useFrame Loop</text>
+  <text x="1140" y="151" text-anchor="middle" class="sublabel">~60fps animation</text>
+  <text x="1140" y="163" text-anchor="middle" class="annotation">idle: gentle float</text>
+  <text x="1140" y="173" text-anchor="middle" class="annotation">spinning: fast orbit</text>
+
+  <!-- Arrow from CardField to useFrame -->
+  <path d="M 980 150 L 1020 150" fill="none" stroke="#22d3ee" stroke-width="2" marker-end="url(#arrow-cyan)"/>
+
+  <!-- GSAP Timeline -->
+  <rect x="700" y="220" width="280" height="100" rx="6" fill="#0f172a"/>
+  <rect x="700" y="220" width="280" height="100" rx="6" fill="rgba(96,25,34,0.4)" stroke="#fb7185" stroke-width="1.5"/>
+  <text x="840" y="245" text-anchor="middle" class="component-label">GSAP Timeline</text>
+  <text x="840" y="261" text-anchor="middle" class="sublabel">createLotteryTimeline()</text>
+  <text x="840" y="273" text-anchor="middle" class="annotation">[0-3.5s] chasing</text>
+  <text x="840" y="285" text-anchor="middle" class="annotation">[3.5-5.5s] locking</text>
+  <text x="840" y="297" text-anchor="middle" class="annotation">[5.5s+] revealed</text>
+  <text x="840" y="309" text-anchor="middle" class="annotation">pickChaseTargets(): random</text>
+
+  <!-- Camera Controller -->
+  <rect x="1020" y="220" width="240" height="100" rx="6" fill="#0f172a"/>
+  <rect x="1020" y="220" width="240" height="100" rx="6" fill="rgba(8,51,68,0.4)" stroke="#22d3ee" stroke-width="1.5"/>
+  <text x="1140" y="245" text-anchor="middle" class="component-label">Camera Controller</text>
+  <text x="1140" y="261" text-anchor="middle" class="sublabel">Three.js PerspectiveCamera</text>
+  <text x="1140" y="273" text-anchor="middle" class="annotation">idle: orbit 28 units away</text>
+  <text x="1140" y="285" text-anchor="middle" class="annotation">chasing: fly to cards</text>
+  <text x="1140" y="297" text-anchor="middle" class="annotation">locking: zoom front view</text>
+  <text x="1140" y="309" text-anchor="middle" class="annotation">FOV animation</text>
+
+  <!-- Arrow from Timeline to Camera -->
+  <path d="M 980 270 L 1020 270" fill="none" stroke="#fb7185" stroke-width="2" marker-end="url(#arrow-gold)"/>
+
+  <!-- Post-Processing Effects -->
+  <rect x="700" y="350" width="280" height="70" rx="6" fill="#0f172a"/>
+  <rect x="700" y="350" width="280" height="70" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="840" y="375" text-anchor="middle" class="component-label">PostProcessing</text>
+  <text x="840" y="391" text-anchor="middle" class="sublabel">Bloom, Chromatic, Noise</text>
+  <text x="840" y="405" text-anchor="middle" class="annotation">Intensity varies by phase</text>
+
+  <!-- Particle System -->
+  <rect x="1020" y="350" width="240" height="70" rx="6" fill="#0f172a"/>
+  <rect x="1020" y="350" width="240" height="70" rx="6" fill="rgba(120,53,15,0.3)" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="1140" y="375" text-anchor="middle" class="component-label">Particle System</text>
+  <text x="1140" y="391" text-anchor="middle" class="sublabel">Gold & Heart particles</text>
+  <text x="1140" y="405" text-anchor="middle" class="annotation">igniteWinnerCard()</text>
+
+  <!-- Arrow from PostProcessing to Particles -->
+  <path d="M 980 385 L 1020 385" fill="none" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#arrow-gold)"/>
+
+  <!-- Audio System -->
+  <rect x="700" y="450" width="560" height="60" rx="6" fill="#0f172a"/>
+  <rect x="700" y="450" width="560" height="60" rx="6" fill="rgba(76,29,149,0.3)" stroke="#a78bfa" stroke-width="1.5"/>
+  <text x="980" y="475" text-anchor="middle" class="component-label">Audio Synthesis</text>
+  <text x="980" y="489" text-anchor="middle" class="sublabel">spinning: background music | chasing/locking: effects | revealed: celebratory sound</text>
+
+  <!-- ============ DATA FLOW ARROWS ============ -->
+  <!-- From state to scene -->
+  <path d="M 640 320 Q 670 300, 700 250" fill="none" stroke="#22d3ee" stroke-width="2" marker-end="url(#arrow-cyan)"/>
+  <text x="655" y="305" class="arrow-label">phase</text>
+  <text x="655" y="316" class="arrow-label">currentWinner</text>
+
+  <path d="M 640 435 Q 670 420, 700 330" fill="none" stroke="#a78bfa" stroke-width="2" marker-end="url(#arrow-gold)"/>
+  <text x="645" y="420" class="arrow-label">selectWinner()</text>
+
+  <!-- ============ LEGEND ============ -->
+  <text x="50" y="650" fill="#fbbf24" font-size="11" font-weight="700">KEY INSIGHTS:</text>
+
+  <rect x="50" y="670" width="560" height="280" rx="6" fill="#0f172a"/>
+  <rect x="50" y="670" width="560" height="280" rx="6" fill="rgba(30,41,59,0.3)" stroke="#94a3b8" stroke-width="1"/>
+
+  <text x="70" y="695" fill="#fbbf24" font-size="10" font-weight="700">✓ Winner Selection Timing:</text>
+  <text x="85" y="710" fill="#ffffff" font-size="9">• Math.random() called ONCE when user stops spinning (SPACE during spinning phase)</text>
+  <text x="85" y="724" fill="#ffffff" font-size="9">• selectWinner() picks from available guests (hasWon: false)</text>
+  <text x="85" y="738" fill="#ffffff" font-size="9">• Animation during spinning is deterministic (no re-randomization)</text>
+
+  <text x="70" y="760" fill="#fbbf24" font-size="10" font-weight="700">✓ Phase Flow:</text>
+  <text x="85" y="775" fill="#ffffff" font-size="9">• idle → spinning (user SPACE) → chasing (auto, winner picked here)</text>
+  <text x="85" y="789" fill="#ffffff" font-size="9">• → locking (auto, 2s) → revealed (user presses N for next round)</text>
+  <text x="85" y="803" fill="#ffffff" font-size="9">• Each phase triggers different animations & visual effects</text>
+
+  <text x="70" y="825" fill="#fbbf24" font-size="10" font-weight="700">✓ Random Number Uses:</text>
+  <text x="85" y="840" fill="#ffffff" font-size="9">• Card motion offsets (app startup, once per card)</text>
+  <text x="85" y="854" fill="#ffffff" font-size="9">• Chase targets (pickChaseTargets: random cards visited during chase)</text>
+  <text x="85" y="868" fill="#ffffff" font-size="9">• Winner selection (selectWinner: one call per draw)</text>
+
+  <text x="70" y="890" fill="#fbbf24" font-size="10" font-weight="700">✓ Store Persistence:</text>
+  <text x="85" y="905" fill="#ffffff" font-size="9">• guests[], winners[], currentRound persist across rounds</text>
+  <text x="85" y="919" fill="#ffffff" font-size="9">• confirmWinner() marks guest as hasWon, removes from available pool</text>
+  <text x="85" y="933" fill="#ffffff" font-size="9">• nextRound() resets phase to idle, increments round counter</text>
+
+  <!-- Right side legend: File References -->
+  <text x="650" y="695" fill="#22d3ee" font-size="10" font-weight="700">📁 KEY FILES:</text>
+  <text x="665" y="710" fill="#ffffff" font-size="8">useLotteryStore.ts (30-38): selectWinner()</text>
+  <text x="665" y="722" fill="#ffffff" font-size="8">CardField.tsx (155-199): stopSpin() calls selectWinner()</text>
+  <text x="665" y="734" fill="#ffffff" font-size="8">lotteryTimeline.ts (26-164): GSAP timeline definition</text>
+  <text x="665" y="746" fill="#ffffff" font-size="8">useKeyboard.ts (24-68): Phase-based keyboard control</text>
+  <text x="665" y="758" fill="#ffffff" font-size="8">types/index.ts (8-13): LotteryPhase definition</text>
+
+  <text x="650" y="790" fill="#34d399" font-size="10" font-weight="700">🔄 STATE TRANSITIONS:</text>
+  <text x="665" y="805" fill="#ffffff" font-size="8">setPhase(): Update phase in store</text>
+  <text x="665" y="817" fill="#ffffff" font-size="8">selectWinner(): Pick random guest</text>
+  <text x="665" y="829" fill="#ffffff" font-size="8">confirmWinner(): Mark winner, add to list</text>
+  <text x="665" y="841" fill="#ffffff" font-size="8">nextRound(): Increment round, reset phase</text>
+  <text x="665" y="853" fill="#ffffff" font-size="8">removeWinner(id): Undo draw, re-enter pool</text>
+
+  <text x="650" y="885" fill="#fb7185" font-size="10" font-weight="700">⏱️ TIMING:</text>
+  <text x="665" y="900" fill="#ffffff" font-size="8">spinning: user-controlled</text>
+  <text x="665" y="912" fill="#ffffff" font-size="8">chasing: 3.5s (4 cards visited)</text>
+  <text x="665" y="924" fill="#ffffff" font-size="8">locking: 2.0s (winner scales, others scatter)</text>
+  <text x="665" y="936" fill="#ffffff" font-size="8">revealed: user-paced (press N to continue)</text>
+
+</svg>

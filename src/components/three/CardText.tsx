@@ -16,59 +16,72 @@ function createCardTexture({ code, width, height }: Required<CardTextureOptions>
   canvas.height = height
   const ctx = canvas.getContext('2d')!
 
-  // Background — warm wine red gradient for a wedding atmosphere
+  // Background — deep black with subtle charcoal gradient
   const bg = ctx.createLinearGradient(0, 0, 0, height)
-  bg.addColorStop(0, 'rgba(88, 22, 31, 0.95)')
-  bg.addColorStop(1, 'rgba(18, 6, 10, 0.99)')
+  bg.addColorStop(0, '#1a1a24')
+  bg.addColorStop(0.5, '#101018')
+  bg.addColorStop(1, '#0a0a0f')
   ctx.fillStyle = bg
   ctx.fillRect(0, 0, width, height)
 
-  const glow = ctx.createRadialGradient(width * 0.5, height * 0.18, 0, width * 0.5, height * 0.18, width * 0.8)
-  glow.addColorStop(0, 'rgba(255, 220, 140, 0.18)')
-  glow.addColorStop(1, 'rgba(255, 220, 140, 0)')
+  // Subtle gold edge lighting from top
+  const glow = ctx.createRadialGradient(width * 0.5, 0, 0, width * 0.5, 0, width * 0.7)
+  glow.addColorStop(0, 'rgba(201, 168, 76, 0.06)')
+  glow.addColorStop(1, 'rgba(201, 168, 76, 0)')
   ctx.fillStyle = glow
   ctx.fillRect(0, 0, width, height)
 
-  // Subtle border — thin gold line
-  ctx.strokeStyle = COLORS.glassBorder
-  ctx.lineWidth = 1.25
+  // Single clean gold border
   const inset = 12
+  ctx.strokeStyle = 'rgba(201, 168, 76, 0.35)'
+  ctx.lineWidth = 1.2
   ctx.strokeRect(inset, inset, width - inset * 2, height - inset * 2)
 
-  // Top accent — thin bright line
-  const topGrad = ctx.createLinearGradient(width * 0.2, 0, width * 0.8, 0)
-  topGrad.addColorStop(0, 'transparent')
-  topGrad.addColorStop(0.5, COLORS.gold)
-  topGrad.addColorStop(1, 'transparent')
-  ctx.strokeStyle = topGrad
-  ctx.lineWidth = 1
-  ctx.beginPath()
-  ctx.moveTo(width * 0.2, inset)
-  ctx.lineTo(width * 0.8, inset)
-  ctx.stroke()
+  // L-shaped corner accents
+  const cornerLen = 16
+  ctx.strokeStyle = 'rgba(240, 215, 140, 0.55)'
+  ctx.lineWidth = 1.8
+  const corners = [
+    { x: inset, y: inset, dx: 1, dy: 1 },
+    { x: width - inset, y: inset, dx: -1, dy: 1 },
+    { x: inset, y: height - inset, dx: 1, dy: -1 },
+    { x: width - inset, y: height - inset, dx: -1, dy: -1 },
+  ]
+  for (const { x, y, dx, dy } of corners) {
+    ctx.beginPath()
+    ctx.moveTo(x + dx * cornerLen, y)
+    ctx.lineTo(x, y)
+    ctx.lineTo(x, y + dy * cornerLen)
+    ctx.stroke()
+  }
 
-  // Main number — large, centered, elegant
+  // Small "NO." label above number
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.font = `bold ${Math.floor(width * 0.22)}px "SF Pro Display", "Helvetica Neue", system-ui, sans-serif`
-  ctx.fillStyle = COLORS.goldLight
-  ctx.shadowColor = 'rgba(201, 169, 110, 0.28)'
-  ctx.shadowBlur = 6
-  ctx.fillText(`NO.${code}`, width / 2, height * 0.42)
+  ctx.font = `300 ${Math.floor(width * 0.06)}px "Outfit", system-ui, sans-serif`
+  ctx.fillStyle = 'rgba(232, 213, 163, 0.45)'
+  ctx.fillText('NO.', width / 2, height * 0.28)
+
+  // Main number — large, champagne gold, centered
+  ctx.font = `bold ${Math.floor(width * 0.26)}px "Outfit", "SF Pro Display", system-ui, sans-serif`
+  ctx.fillStyle = COLORS.goldBright
+  ctx.shadowColor = 'rgba(201, 168, 76, 0.4)'
+  ctx.shadowBlur = 10
+  ctx.fillText(code, width / 2, height * 0.42)
   ctx.shadowBlur = 0
 
   // Thin divider
-  ctx.strokeStyle = 'rgba(201, 169, 110, 0.2)'
-  ctx.lineWidth = 0.5
+  const divY = height * 0.56
+  const divGrad = ctx.createLinearGradient(width * 0.2, 0, width * 0.8, 0)
+  divGrad.addColorStop(0, 'transparent')
+  divGrad.addColorStop(0.5, 'rgba(201, 168, 76, 0.3)')
+  divGrad.addColorStop(1, 'transparent')
+  ctx.strokeStyle = divGrad
+  ctx.lineWidth = 0.8
   ctx.beginPath()
-  ctx.moveTo(width * 0.3, height * 0.55)
-  ctx.lineTo(width * 0.7, height * 0.55)
+  ctx.moveTo(width * 0.2, divY)
+  ctx.lineTo(width * 0.8, divY)
   ctx.stroke()
-
-  // Subtitle — small, delicate
-  ctx.font = `300 ${Math.floor(width * 0.05)}px "PingFang SC", "SF Pro Display", system-ui, sans-serif`
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.35)'
-  ctx.fillText('永恒之爱', width / 2, height * 0.63)
 
   const tex = new THREE.CanvasTexture(canvas)
   tex.colorSpace = THREE.SRGBColorSpace
@@ -81,8 +94,8 @@ function createCardTexture({ code, width, height }: Required<CardTextureOptions>
 }
 
 /**
- * Creates an elegant card texture with Korean minimalist aesthetic.
- * Clean typography, subtle gold accent, generous whitespace.
+ * Creates a premium dark card texture with champagne gold accents.
+ * Noir Luxe aesthetic — black surface, gold typography, L-shaped corners.
  */
 export function useCardTexture({ code, width = 256, height = 424 }: CardTextureOptions) {
   const texture = useMemo(() => {

@@ -7,10 +7,10 @@ export function StarField() {
       radius={SCENE.starDepth}
       depth={50}
       count={SCENE.starCount}
-      factor={4}
-      saturation={0.1}
+      factor={3}
+      saturation={0}
       fade
-      speed={0.5}
+      speed={0.3}
     />
   )
 }

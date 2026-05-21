@@ -5,7 +5,7 @@ import * as THREE from 'three'
 import { Card } from '@/components/three/Card'
 import { useLotteryStore } from '@/store/useLotteryStore'
 import { fibonacciSphere, randomRotation } from '@/utils/distributions'
-import { SCENE } from '@/utils/constants'
+import { CARD, SCENE } from '@/utils/constants'
 import { createLotteryTimeline } from '@/animations/lotteryTimeline'
 import {
   startBackgroundMusic,
@@ -128,9 +128,11 @@ export function CardField() {
       if (material) {
         gsap.killTweensOf(material)
         material.emissiveIntensity = BASE_EMISSIVE
+        material.opacity = CARD.opacity
         materialRefs.current[index] = material
       }
 
+      card.visible = true
       card.scale.set(1, 1, 1)
       const initial = initialTransforms[index]
       if (initial) {
@@ -232,34 +234,30 @@ export function CardField() {
       }
 
       if (phase === 'spinning') {
-        const contraction = 0.84 + Math.sin(t * 4.8 + motion.orbitOffset) * 0.04
-        card.position.x =
-          position[0] * contraction + Math.sin(t * 2.7 + motion.orbitOffset) * motion.spinRadius
-        card.position.y =
-          position[1] * 0.82 +
-          Math.sin(t * (2.4 + motion.floatSpeed) + motion.floatOffset) *
-            motion.floatAmplitude *
-            2.4
-        card.position.z =
-          position[2] * contraction + Math.cos(t * 2.3 + motion.orbitOffset) * motion.spinRadius
+        const spinAngle = t * (0.95 + motion.spinYawSpeed * 0.22) + motion.orbitOffset
+        const swirlRadius = 0.88 + Math.sin(t * 2.1 + motion.floatOffset) * 0.08
+        const baseX = position[0] * Math.cos(spinAngle) - position[2] * Math.sin(spinAngle)
+        const baseZ = position[0] * Math.sin(spinAngle) + position[2] * Math.cos(spinAngle)
 
-        card.rotation.x = rotation[0] + Math.sin(t * 5.4 + motion.swayOffset) * 0.24
-        card.rotation.y += motion.spinYawSpeed * delta
-        card.rotation.z = rotation[2] + Math.cos(t * 5.9 + motion.swayOffset) * 0.18
+        card.position.x = baseX * swirlRadius + Math.sin(t * 4.2 + motion.swayOffset) * motion.spinRadius * 0.9
+        card.position.y =
+          position[1] * 0.55 +
+          Math.sin(t * (2.8 + motion.floatSpeed) + motion.floatOffset) * motion.floatAmplitude * 1.35
+        card.position.z = baseZ * swirlRadius + Math.cos(t * 3.8 + motion.swayOffset) * motion.spinRadius
+
+        card.rotation.x = rotation[0] + Math.sin(t * 2.9 + motion.swayOffset) * 0.1
+        card.rotation.y = spinAngle + Math.sin(t * 2.1 + motion.floatOffset) * 0.12
+        card.rotation.z = rotation[2] + Math.cos(t * 2.6 + motion.swayOffset) * 0.08
 
         if (material) {
-          material.emissiveIntensity = 0.16 + Math.sin(t * 6.1 + motion.emissiveOffset) * 0.05
+          material.emissiveIntensity = 0.14 + Math.sin(t * 4.2 + motion.emissiveOffset) * 0.035
         }
         continue
       }
 
       if (guest.id === currentWinnerId) {
-        card.position.y = Math.sin(t * 1.9 + motion.floatOffset) * 0.12
-        card.rotation.x = Math.sin(t * 0.85 + motion.swayOffset) * 0.05
-        card.rotation.z = Math.sin(t * 1.35 + motion.orbitOffset) * 0.035
-
         if (material) {
-          material.emissiveIntensity = 0.22 + Math.sin(t * 3.4 + motion.emissiveOffset) * 0.09
+          material.emissiveIntensity = 0.18 + Math.sin(t * 2.4 + motion.emissiveOffset) * 0.03
         }
       }
     }

@@ -5,26 +5,25 @@ import { ControlPanel } from './ControlPanel'
 export function HUD() {
   return (
     <div className="absolute inset-0 pointer-events-none z-10">
-      {/* Title */}
+      {/* Title — clean, minimal */}
       <div className="absolute top-6 left-0 right-0 flex justify-center">
         <h1
-          className="text-xl tracking-[0.3em] font-light"
+          className="title-text text-xl tracking-[0.35em] font-medium"
           style={{
-            color: 'rgba(255, 232, 184, 0.82)',
-            textShadow: '0 0 28px rgba(213, 166, 74, 0.25)',
+            fontFamily: '"Outfit", system-ui, sans-serif',
           }}
         >
           婚礼幸运抽奖
         </h1>
       </div>
 
-      {/* Winner reveal panel */}
+      {/* Winner reveal */}
       <WinnerReveal />
 
       {/* Bottom status */}
       <StatusBar />
 
-      {/* Control panel (has its own pointer-events) */}
+      {/* Control panel */}
       <div className="pointer-events-auto">
         <ControlPanel />
       </div>
