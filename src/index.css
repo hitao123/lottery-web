@@ -1,16 +1,17 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════
-   Noir Luxe — Premium Black + Champagne Gold
+   Wedding Stage — Burgundy + Gold + Warm Ivory
    ═══════════════════════════════════════════════ */
 
 :root {
-  --gold: #c9a84c;
-  --gold-light: #e8d5a3;
-  --gold-bright: #f0d78c;
-  --bg-deep: #0a0a0f;
-  --text-primary: #e8e8e8;
-  --text-muted: rgba(232, 232, 232, 0.45);
+  --gold: #d4af5a;
+  --gold-light: #f2d8a1;
+  --gold-bright: #fff1c9;
+  --rose: #8e1630;
+  --bg-deep: #120507;
+  --text-primary: #fff8f0;
+  --text-muted: rgba(255, 248, 240, 0.5);
 }
 
 /* ═══ Gold Shimmer (text + border) ═══ */
@@ -21,11 +22,24 @@
 
 @keyframes pulse-glow {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(201, 168, 76, 0.12), 0 0 60px rgba(201, 168, 76, 0.04);
+    box-shadow: 0 0 20px rgba(255, 214, 148, 0.18), 0 0 60px rgba(255, 214, 148, 0.06);
   }
   50% {
-    box-shadow: 0 0 36px rgba(201, 168, 76, 0.24), 0 0 80px rgba(201, 168, 76, 0.08);
+    box-shadow: 0 0 36px rgba(255, 214, 148, 0.28), 0 0 80px rgba(255, 214, 148, 0.12);
   }
+}
+
+.title-shell {
+  background: linear-gradient(180deg, rgba(126, 18, 38, 0.68) 0%, rgba(44, 7, 14, 0.74) 100%);
+  border: 1px solid rgba(255, 241, 201, 0.18);
+  box-shadow: 0 12px 44px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(16px);
+}
+
+.title-shell .title-text,
+.title-shell > div:last-child {
+  padding-left: 6px;
+  padding-right: 6px;
 }
 
 /* ═══ Winner Card — Clean & Premium ═══ */
@@ -41,11 +55,11 @@
   border-radius: 18px;
   background: linear-gradient(
     135deg,
-    var(--gold) 0%,
+    rgba(255, 241, 201, 0.8) 0%,
     transparent 30%,
     var(--gold-bright) 50%,
     transparent 70%,
-    var(--gold) 100%
+    rgba(255, 214, 148, 0.9) 100%
   );
   background-size: 200% 200%;
   animation: gold-shimmer 4s linear infinite;
@@ -57,11 +71,11 @@
 .winner-number {
   background: linear-gradient(
     90deg,
-    #c9a84c 0%,
-    #e8d5a3 20%,
-    #f5f0e0 45%,
-    #e8d5a3 70%,
-    #c9a84c 100%
+    #ffe1a4 0%,
+    #fff1c9 20%,
+    #fff8f0 45%,
+    #fff1c9 70%,
+    #ffe1a4 100%
   );
   background-size: 200% auto;
   -webkit-background-clip: text;
@@ -74,11 +88,11 @@
 .title-text {
   background: linear-gradient(
     90deg,
-    #e8d5a3,
-    #f0d78c,
-    #f5f0e0,
-    #f0d78c,
-    #e8d5a3
+    #fff1c9,
+    #ffe1a4,
+    #fff8f0,
+    #ffe1a4,
+    #fff1c9
   );
   background-size: 200% auto;
   -webkit-background-clip: text;
@@ -89,8 +103,8 @@
 
 /* ═══ Glass Surface ═══ */
 .glass-surface {
-  background: rgba(14, 14, 20, 0.75);
+  background: rgba(51, 9, 16, 0.72);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(201, 168, 76, 0.2);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 241, 201, 0.16);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }

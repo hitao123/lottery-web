@@ -16,20 +16,22 @@ export function useKeyboard({ onToggleFullscreen }: UseKeyboardOptions) {
       const { phase } = useLotteryStore.getState()
 
       // Prevent default for our shortcuts
-      if (['Space', 'Enter', 'KeyN', 'KeyF', 'KeyR', 'Escape'].includes(e.code)) {
+      if (['Space', 'Enter', 'KeyS', 'KeyN', 'KeyF', 'KeyR', 'Escape'].includes(e.code)) {
         e.preventDefault()
       }
 
       switch (e.code) {
         case 'Space': {
           if (phase === 'idle') {
-            // Start spinning (no winner selected yet)
             const startFn = (window as unknown as Record<string, unknown>).__lotteryStartSpin
             if (typeof startFn === 'function') {
               (startFn as () => void)()
             }
-          } else if (phase === 'spinning') {
-            // Stop! Select winner NOW and play lock animation
+          }
+          break
+        }
+        case 'KeyS': {
+          if (phase === 'spinning') {
             const stopFn = (window as unknown as Record<string, unknown>).__lotteryStopSpin
             if (typeof stopFn === 'function') {
               (stopFn as () => void)()
@@ -39,7 +41,11 @@ export function useKeyboard({ onToggleFullscreen }: UseKeyboardOptions) {
         }
         case 'Enter': {
           if (phase === 'revealed') {
-            useLotteryStore.getState().confirmWinner()
+            const resetFn = (window as unknown as Record<string, unknown>).__lotteryResetCards
+            if (typeof resetFn === 'function') {
+              (resetFn as () => void)()
+            }
+            useLotteryStore.getState().nextRound()
           }
           break
         }

@@ -68,12 +68,11 @@ export function scatterCards(
 
   cards.forEach((card, i) => {
     if (i === winnerIndex) return
-    const dir = card.position.clone().normalize()
-    const scatterDist = 10 + Math.random() * 14
     const material = getCardMaterial(card)
-    const scatterTarget = card.position.clone().add(dir.multiplyScalar(scatterDist))
-    scatterTarget.y += (Math.random() - 0.5) * 3.5
-    scatterTarget.z = Math.min(scatterTarget.z - 1.5, -6 - Math.random() * 10)
+    const scatterTarget = card.position.clone()
+    scatterTarget.x += (Math.random() - 0.5) * 1.2
+    scatterTarget.y += (Math.random() - 0.5) * 0.8
+    scatterTarget.z -= 3.8 + Math.random() * 2.6
 
     tl.to(
       card.position,
@@ -90,11 +89,11 @@ export function scatterCards(
     tl.to(
       card.rotation,
       {
-        x: card.rotation.x + (Math.random() - 0.5) * 1.8,
-        y: card.rotation.y + (Math.random() - 0.5) * 2.8,
-        z: card.rotation.z + (Math.random() - 0.5) * 1.4,
+        x: card.rotation.x - 0.12 + (Math.random() - 0.5) * 0.16,
+        y: card.rotation.y + (Math.random() - 0.5) * 0.08,
+        z: card.rotation.z + (Math.random() - 0.5) * 0.12,
         duration,
-        ease: 'power2.out',
+        ease: 'sine.out',
       },
       0
     )
@@ -102,11 +101,11 @@ export function scatterCards(
     tl.to(
       card.scale,
       {
-        x: 0.04,
-        y: 0.04,
-        z: 0.04,
+        x: 0.9,
+        y: 0.9,
+        z: 0.9,
         duration,
-        ease: 'power3.out',
+        ease: 'sine.out',
       },
       0
     )
@@ -115,14 +114,22 @@ export function scatterCards(
       tl.to(
         material,
         {
-          opacity: 0.008,
-          emissiveIntensity: 0,
+          opacity: 0.16,
+          emissiveIntensity: 0.02,
           duration: duration * 0.8,
           ease: 'power3.out',
         },
         0
       )
     }
+
+    tl.call(
+      () => {
+        card.visible = false
+      },
+      [],
+      duration * 0.92
+    )
   })
 
   return tl
@@ -140,17 +147,17 @@ export function lockWinnerCard(
     keyframes: [
       {
         x: 0,
-        y: 0.1,
-        z: 3.8,
+        y: 2.55,
+        z: 1.35,
         duration: duration * 0.4,
-        ease: 'power4.in',
+        ease: 'power2.inOut',
       },
       {
         x: 0,
-        y: 0,
-        z: 5.65,
+        y: 3.2,
+        z: 1.8,
         duration: duration * 0.6,
-        ease: 'back.out(1.4)',
+        ease: 'back.out(1.2)',
       },
     ],
   })
@@ -229,9 +236,9 @@ export function rotateToFaceCamera(
   return gsap.to(card.rotation, {
     keyframes: [
       {
-        x: 0.03,
-        y: 0.06,
-        z: -0.02,
+        x: -0.02,
+        y: 0,
+        z: 0,
         duration: duration * 0.3,
         ease: 'power2.out',
       },

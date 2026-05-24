@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { useLotteryStore } from '@/store/useLotteryStore'
-import { SCENE } from '@/utils/constants'
+import { getStageViewportLayout } from '@/utils/responsiveStage'
 
 export function CameraRig() {
   const phase = useLotteryStore((s) => s.phase)
@@ -11,15 +11,18 @@ export function CameraRig() {
   useFrame((state) => {
     const camera = state.camera
     const t = state.clock.elapsedTime
+    const aspect = state.size.width / Math.max(1, state.size.height)
+    const layout = getStageViewportLayout(aspect)
 
-    if (phase === 'idle') {
-      // Slow cinematic orbit
-      const radius = SCENE.cameraIdleDistance
-      const speed = 0.03
-      camera.position.x = Math.sin(t * speed) * radius
-      camera.position.z = Math.cos(t * speed) * radius
-      camera.position.y = Math.sin(t * speed * 0.5) * 2
-      camera.lookAt(0, 0, 0)
+    if (phase === 'spinning') {
+      camera.position.x = layout.cameraPosition[0] + Math.sin(t * 0.24) * 0.24
+      camera.position.y = layout.cameraPosition[1] + Math.cos(t * 0.34) * 0.05
+      camera.position.z = layout.cameraPosition[2] + Math.sin(t * 0.22) * 0.12
+      camera.lookAt(...layout.target)
+    }
+
+    if (phase !== 'spinning') {
+      camera.rotation.z *= 0.9
     }
 
     // Trigger shake when entering locking phase

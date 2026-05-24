@@ -2,11 +2,7 @@ import gsap from 'gsap'
 import * as THREE from 'three'
 import {
   flashCard,
-  igniteWinnerCard,
   scatterCards,
-  lockWinnerCard,
-  scaleWinnerCard,
-  rotateToFaceCamera,
 } from './cardAnimations'
 import { TIMING } from '@/utils/constants'
 
@@ -41,13 +37,8 @@ export function createLotteryTimeline({
   const winnerCard = cards[winnerIndex]
   if (!winnerCard) return master
 
-  const cardPositions = cards.map((c) => c.position.clone())
   const visitCount = TIMING.chaseVisitCount
-  const pauseDurations = TIMING.chasePauses
   const visitIndices = pickChaseTargets(cards.length, winnerIndex, visitCount)
-
-  const startPos = camera.position.clone()
-  const orbitRadius = Math.sqrt(startPos.x * startPos.x + startPos.z * startPos.z)
   const perspectiveCamera = camera instanceof THREE.PerspectiveCamera ? camera : null
 
   // ═══════════════════════════════════════════════
@@ -57,74 +48,48 @@ export function createLotteryTimeline({
   // ═══════════════════════════════════════════════
   master.addLabel('chasing', 0)
 
-  let cumulativeTime = 0
-
   visitIndices.forEach((cardIdx, i) => {
-    const cardPos = cardPositions[cardIdx]
-    const dir = cardPos.clone().normalize()
-    const isLast = i === visitIndices.length - 1
-
-    // Camera gets progressively closer (more intimate zoom each time)
-    const distanceFactor = 0.95 - (i / visitIndices.length) * 0.2 // 0.95 → 0.75
-    const cameraTarget = dir.clone().multiplyScalar(orbitRadius * distanceFactor)
-    cameraTarget.y += (i % 2 === 0 ? 0.6 : -0.4) * (1 - i * 0.06)
-    const lookTarget = cardPos.clone()
-
-    const pauseDuration = pauseDurations[i]
-    // Travel time also increases (momentum dying)
-    const travelTime = 0.15 + i * 0.04 // 0.15s → 0.39s
-
-    const startTime = cumulativeTime
-
-    // Camera movement — easing gets progressively heavier
-    const moveEase = isLast
-      ? 'expo.out'
-      : i > 4
-        ? 'power3.inOut'
-        : 'power2.inOut'
-
-    master.to(
-      camera.position,
-      {
-        x: cameraTarget.x,
-        y: cameraTarget.y,
-        z: cameraTarget.z,
-        duration: travelTime,
-        ease: moveEase,
-        onUpdate: () => camera.lookAt(lookTarget),
-      },
-      startTime
-    )
-
-    // Flash effect — progressively MORE dramatic
-    const flashIntensity = 0.12 + (i / visitIndices.length) * 0.4 // 0.12 → 0.52
-    const flashDuration = pauseDuration * 0.8
     master.add(
-      flashCard(cards[cardIdx], flashDuration, flashIntensity),
-      startTime + travelTime * 0.3
+      flashCard(cards[cardIdx], 0.28 + i * 0.04, 0.18 + i * 0.05),
+      0.22 + i * 0.28
     )
-
-    // FOV zoom punch — gets heavier each time
-    if (perspectiveCamera) {
-      const fovPunch = 2 + i * 1.5 // 2° → 11°
-      const baseFov = 40
-      master.to(
-        perspectiveCamera,
-        {
-          fov: baseFov - fovPunch,
-          duration: pauseDuration * 0.35,
-          ease: 'power2.out',
-          yoyo: true,
-          repeat: 1,
-          repeatDelay: pauseDuration * 0.15,
-          onUpdate: () => perspectiveCamera.updateProjectionMatrix(),
-        },
-        startTime + travelTime
-      )
-    }
-
-    cumulativeTime += travelTime + pauseDuration
   })
+
+  master.to(
+    camera.position,
+    {
+      x: 0,
+      y: 2.35,
+      z: 17.2,
+      duration: TIMING.chasingDuration,
+      ease: 'sine.inOut',
+      onUpdate: () => camera.lookAt(0, 0.45, -1.5),
+    },
+    0
+  )
+
+  if (perspectiveCamera) {
+    master.to(
+      perspectiveCamera,
+      {
+        fov: 41,
+        duration: TIMING.chasingDuration * 0.55,
+        ease: 'sine.out',
+        onUpdate: () => perspectiveCamera.updateProjectionMatrix(),
+      },
+      0
+    )
+    master.to(
+      perspectiveCamera,
+      {
+        fov: 38,
+        duration: TIMING.chasingDuration * 0.45,
+        ease: 'sine.inOut',
+        onUpdate: () => perspectiveCamera.updateProjectionMatrix(),
+      },
+      TIMING.chasingDuration * 0.55
+    )
+  }
 
   // ═══════════════════════════════════════════════
   // PHASE 2: LOCKING (~5s → ~6s)
@@ -140,11 +105,11 @@ export function createLotteryTimeline({
     camera.position,
     {
       x: 0,
-      y: 0,
-      z: 8.0,
-      duration: TIMING.lockingDuration * 0.6,
+      y: 2.1,
+      z: 14.4,
+      duration: TIMING.lockingDuration * 0.72,
       ease: 'expo.out',
-      onUpdate: () => camera.lookAt(0, 0, 0),
+      onUpdate: () => camera.lookAt(0, 2.9, 0.8),
     },
     'locking'
   )
@@ -153,7 +118,7 @@ export function createLotteryTimeline({
     master.to(
       perspectiveCamera,
       {
-        fov: 28,
+        fov: 32,
         duration: TIMING.lockingDuration * 0.5,
         ease: 'expo.out',
         onUpdate: () => perspectiveCamera.updateProjectionMatrix(),
@@ -162,17 +127,7 @@ export function createLotteryTimeline({
     )
   }
 
-  // Winner card — fast, impactful lock
-  master.add(flashCard(winnerCard, TIMING.lockingDuration * 0.4, 0.6), 'locking')
-  master.add(lockWinnerCard(winnerCard, TIMING.lockingDuration * 0.8), 'locking')
-  master.add(rotateToFaceCamera(winnerCard, TIMING.lockingDuration * 0.7), 'locking')
-  master.add(
-    scaleWinnerCard(winnerCard, TIMING.lockingDuration * 0.9),
-    `locking+=${TIMING.lockingDuration * 0.15}`
-  )
-  master.add(igniteWinnerCard(winnerCard, TIMING.lockingDuration * 0.8), 'locking')
-
-  // Other cards scatter (fast — 0.8s)
+  // Other cards fade back into the wall so the stage number becomes the hero.
   master.add(scatterCards(cards, winnerIndex, TIMING.lockingDuration * 0.8), 'locking')
 
   // ═══════════════════════════════════════════════
@@ -184,7 +139,7 @@ export function createLotteryTimeline({
     master.to(
       perspectiveCamera,
       {
-        fov: 34,
+        fov: 36,
         duration: TIMING.revealedDelay + 0.4,
         ease: 'sine.out',
         onUpdate: () => perspectiveCamera.updateProjectionMatrix(),
@@ -192,6 +147,14 @@ export function createLotteryTimeline({
       'revealed'
     )
   }
+
+  master.call(
+    () => {
+      winnerCard.visible = false
+    },
+    [],
+    'revealed'
+  )
 
   return master
 }

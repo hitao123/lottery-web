@@ -7,6 +7,7 @@ interface CardProps {
   code: string
   position: [number, number, number]
   initialRotation?: [number, number, number]
+  scale?: number
 }
 
 const cardGeometry = new THREE.PlaneGeometry(CARD.width, CARD.height)
@@ -14,16 +15,18 @@ const cardGeometry = new THREE.PlaneGeometry(CARD.width, CARD.height)
 const cardMaterialProps = {
   transparent: true,
   opacity: CARD.opacity,
-  roughness: 0.35,
-  metalness: 0.4,
+  roughness: 0.64,
+  metalness: 0.04,
+  clearcoat: 0.28,
+  clearcoatRoughness: 0.52,
   emissive: COLORS_HEX.gold,
-  emissiveIntensity: 0.04,
+  emissiveIntensity: 0.03,
   side: THREE.DoubleSide,
 } as const
 
 export const Card = memo(
   forwardRef<THREE.Group, CardProps>(function Card(
-    { code, position, initialRotation = [0, 0, 0] },
+    { code, position, initialRotation = [0, 0, 0], scale = 1 },
     ref
   ) {
     const groupRef = useRef<THREE.Group>(null)
@@ -37,9 +40,10 @@ export const Card = memo(
         ref={groupRef}
         position={position}
         rotation={initialRotation}
+        scale={scale}
       >
         <mesh geometry={cardGeometry}>
-          <meshStandardMaterial map={texture} {...cardMaterialProps} />
+          <meshPhysicalMaterial map={texture} {...cardMaterialProps} />
         </mesh>
       </group>
     )

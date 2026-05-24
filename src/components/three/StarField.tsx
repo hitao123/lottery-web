@@ -5,12 +5,12 @@ export function StarField() {
   return (
     <Stars
       radius={SCENE.starDepth}
-      depth={50}
+      depth={16}
       count={SCENE.starCount}
-      factor={3}
-      saturation={0}
+      factor={2.1}
+      saturation={0.6}
       fade
-      speed={0.3}
+      speed={0.05}
     />
   )
 }
