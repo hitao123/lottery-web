@@ -81,14 +81,19 @@ function WeddingModel({
     const t = state.clock.elapsedTime
     const pointing = Boolean(currentWinner) && (phase === 'locking' || phase === 'revealed')
 
-    root.position.set(position[0], position[1], position[2])
-    root.rotation.y = rotation[1] + Math.sin(t * 0.4 + (variant === 'bride' ? 0 : 0.65)) * 0.03
+    const drawing = phase === 'spinning' || phase === 'chasing'
+    const turnOffset = variant === 'bride' ? 0 : 0.65
 
-    model.rotation.x = Math.sin(t * 0.55 + (variant === 'groom' ? 0.3 : 0)) * 0.01
-    model.rotation.z = Math.sin(t * 0.42 + (variant === 'bride' ? 0.8 : 0.2)) * 0.01
+    root.position.set(position[0], position[1], position[2])
+    root.rotation.y = rotation[1] + Math.sin(t * (drawing ? 2.1 : 0.4) + turnOffset) * (drawing ? 0.46 : 0.03)
+
+    model.rotation.x = Math.sin(t * 0.55 + (variant === 'groom' ? 0.3 : 0)) * (drawing ? 0.018 : 0.01)
+    model.rotation.y = drawing ? Math.sin(t * 2.7 + turnOffset) * 0.1 : 0
+    model.rotation.z = Math.sin(t * 0.42 + (variant === 'bride' ? 0.8 : 0.2)) * (drawing ? 0.018 : 0.01)
 
     if (pointing) {
       root.rotation.y = rotation[1] + (variant === 'bride' ? 0.16 : -0.16)
+      model.rotation.y = 0
       model.rotation.z = variant === 'bride' ? -0.04 : 0.04
     }
   })
@@ -206,6 +211,26 @@ const WeddingStageInner = () => {
   const layout = useMemo(() => {
     return getStageViewportLayout(size.width / Math.max(1, size.height))
   }, [size.height, size.width])
+  const showWinnerBoard = Boolean(currentWinner) && (phase === 'locking' || phase === 'revealed')
+
+  const hideWinnerBoard = () => {
+    const board = boardRef.current
+    const boardGlow = boardGlowRef.current
+
+    if (board) {
+      board.visible = false
+      board.scale.setScalar(0.001)
+      board.position.y = 3.1
+    }
+
+    if (boardGlow?.material instanceof THREE.MeshBasicMaterial) {
+      boardGlow.material.opacity = 0
+    }
+  }
+
+  useLayoutEffect(() => {
+    if (!showWinnerBoard) hideWinnerBoard()
+  }, [showWinnerBoard])
 
   useFrame((state) => {
     const t = state.clock.elapsedTime
@@ -219,19 +244,24 @@ const WeddingStageInner = () => {
 
     if (!board || !boardGlow) return
 
-    const showBoard = Boolean(currentWinner) && (phase === 'locking' || phase === 'revealed')
-    const targetScale = showBoard ? (phase === 'locking' ? 1.03 : 1) : 0.001
+    if (!showWinnerBoard) {
+      hideWinnerBoard()
+      return
+    }
+
+    board.visible = true
+    const targetScale = phase === 'locking' ? 1.03 : 1
     const nextScale = THREE.MathUtils.lerp(board.scale.x, targetScale, 0.16)
     board.scale.setScalar(nextScale)
-    board.position.y = 3.1 + Math.sin(t * 1.1) * (showBoard ? 0.03 : 0)
+    board.position.y = 3.1 + Math.sin(t * 1.1) * 0.03
 
     if (boardGlow.material instanceof THREE.MeshBasicMaterial) {
-      boardGlow.material.opacity = showBoard ? 0.26 + Math.sin(t * 2.2) * 0.05 : 0
+      boardGlow.material.opacity = 0.26 + Math.sin(t * 2.2) * 0.05
     }
   })
 
   return (
-    <group position={[0, -3.62, 0]} scale={layout.stageScale}>
+    <group position={[0, -3.46, 0]} scale={layout.stageScale}>
       <mesh receiveShadow position={[0, -0.54, -2.5]} material={deepRedMaterial}>
         <cylinderGeometry args={[8.6, 9.2, 0.82, 64]} />
       </mesh>
@@ -250,7 +280,7 @@ const WeddingStageInner = () => {
       </mesh>
 
       {/* 背景板（人物身后的装饰整体上移一点，与人物拉开距离） */}
-      <group position={[0, 0.55, 0]}>
+      <group position={[0, 0.82, 0]}>
       <mesh castShadow receiveShadow position={[0, 3.7, -8.15]}>
         <boxGeometry args={[8.8, 5.2, 0.4]} />
         <meshStandardMaterial color="#fbf1e5" roughness={0.84} />
@@ -265,10 +295,10 @@ const WeddingStageInner = () => {
       </mesh>
 
       <Text position={[0, 4.9, -7.65]} fontSize={0.52} color="#9a6e3f" anchorX="center" anchorY="middle" fontWeight={700}>
-        WEDDING LOTTERY
+        婚礼抽奖
       </Text>
-      <Text position={[0, 4.3, -7.65]} fontSize={0.28} color="#c8a27b" anchorX="center" anchorY="middle">
-        Lucky Wedding Day
+      <Text position={[0, 4.3, -7.65]} fontSize={0.28} color="#9a6e3f" anchorX="center" anchorY="middle">
+        谁是幸运儿
       </Text>
 
       <mesh castShadow position={[0, 4.25, -7.55]} material={goldMaterial}>

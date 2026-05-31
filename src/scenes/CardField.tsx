@@ -71,11 +71,11 @@ export function CardField() {
       camera.position,
       {
         x: camX,
-        y: camY + 0.35,
-        z: camZ + 2.6,
+        y: camY + 0.3,
+        z: camZ + 2.85,
         duration: 1.2,
         ease: 'sine.inOut',
-        onUpdate: () => camera.lookAt(tgtX, tgtY - 0.4, tgtZ),
+        onUpdate: () => camera.lookAt(tgtX, tgtY - 0.55, tgtZ),
       },
       0
     )
@@ -100,11 +100,11 @@ export function CardField() {
       camera.position,
       {
         x: 0,
-        y: camY + 0.2,
-        z: camZ + 1.8,
+        y: camY + 0.12,
+        z: camZ + 2.25,
         duration: 0.72,
         ease: 'expo.out',
-        onUpdate: () => camera.lookAt(tgtX, tgtY + 0.05, tgtZ),
+        onUpdate: () => camera.lookAt(tgtX, tgtY - 0.28, tgtZ),
       },
       1.2
     )
@@ -112,7 +112,7 @@ export function CardField() {
     timeline.to(
       camera,
       {
-        fov: layout.fov + 1,
+        fov: layout.fov + 2,
         duration: 0.66,
         ease: 'expo.out',
         onUpdate: () => camera.updateProjectionMatrix(),

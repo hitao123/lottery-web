@@ -83,20 +83,22 @@ export function ControlPanel() {
               background: "rgba(33, 8, 13, 0.94)",
               backdropFilter: "blur(20px)",
               borderLeft: "1px solid rgba(255, 241, 201, 0.16)",
-              padding: "28px 24px 30px",
+              padding: "32px 24px 36px",
               marginTop: "20px",
+              height: "calc(100% - 20px)",
+              boxSizing: "border-box",
             }}
           >
-            <div className="flex items-start justify-between mb-7">
+            <div className="flex items-start justify-between mb-6">
               <div>
                 <h2
-                  className="text-lg font-semibold tracking-wider"
+                  className="text-lg font-semibold tracking-wider leading-none"
                   style={{ color: "rgba(255, 241, 201, 0.92)" }}
                 >
                   控制面板
                 </h2>
                 <p
-                  className="mt-2 text-xs"
+                  className="mt-3 text-xs leading-relaxed"
                   style={{ color: "rgba(255,255,255,0.38)" }}
                 >
                   婚礼抽奖设置与名单管理
@@ -117,13 +119,14 @@ export function ControlPanel() {
 
             {/* Draw progress (moved from bottom status bar) */}
             <div
-              className="mb-5 rounded-[22px] p-4"
+              className="mb-6 rounded-[22px] px-4 py-4"
               style={{
                 background: "rgba(255, 248, 240, 0.035)",
                 border: "1px solid rgba(255, 241, 201, 0.08)",
+                marginBottom: "16px",
               }}
             >
-              <div className="flex items-center justify-between gap-3 mb-2">
+              <div className="flex items-center justify-between gap-3 mb-3">
                 <span style={{ color: "#fff1c9", fontWeight: 600, fontSize: "14px" }}>
                   第{currentRound}轮
                 </span>
@@ -135,7 +138,7 @@ export function ControlPanel() {
                 已抽 <strong style={{ color: "#fff1c9" }}>{wonCount}</strong> / {totalGuests} 人
               </div>
               <p
-                className="text-xs mt-2"
+                className="text-xs mt-3 leading-relaxed"
                 style={{ color: "rgba(255, 255, 255, 0.3)" }}
               >
                 {phaseHint}
@@ -144,25 +147,26 @@ export function ControlPanel() {
 
             {/* Number import */}
             <div
-              className="mb-5 rounded-[22px] p-4"
+              className="mb-6 rounded-[22px] px-4 py-4"
               style={{
                 background: "rgba(255, 248, 240, 0.035)",
                 border: "1px solid rgba(255, 241, 201, 0.08)",
+                marginBottom: "16px",
               }}
             >
               <label
-                className="block text-sm mb-2"
+                className="block text-sm mb-3"
                 style={{ color: "rgba(255, 255, 255, 0.6)" }}
               >
                 来宾编号范围
               </label>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <input
                   type="text"
                   value={rangeInput}
                   onChange={(e) => setRangeInput(e.target.value)}
                   placeholder="5200001-5200200"
-                  className="flex-1 px-3 py-2.5 rounded-xl text-sm outline-none"
+                  className="flex-1 px-3 py-3 rounded-xl text-sm outline-none"
                   style={{
                     background: "rgba(255, 248, 240, 0.07)",
                     border: "1px solid rgba(255, 241, 201, 0.18)",
@@ -171,7 +175,7 @@ export function ControlPanel() {
                 />
                 <button
                   onClick={handleImport}
-                  className="px-4 py-2.5 rounded-xl text-sm cursor-pointer transition-all hover:brightness-110"
+                  className="px-4 py-3 rounded-xl text-sm cursor-pointer transition-all hover:brightness-110"
                   style={{
                     background: "rgba(146, 18, 36, 0.55)",
                     border: "1px solid rgba(255, 241, 201, 0.32)",
@@ -182,7 +186,7 @@ export function ControlPanel() {
                 </button>
               </div>
               <p
-                className="text-xs mt-1"
+                className="text-xs mt-2 leading-relaxed"
                 style={{ color: "rgba(255, 255, 255, 0.3)" }}
               >
                 当前已加载：{guests.length} 位来宾
@@ -191,14 +195,15 @@ export function ControlPanel() {
 
             {/* Winners list */}
             <div
-              className="mb-5 rounded-[22px] p-4"
+              className="mb-6 rounded-[22px] px-4 py-4"
               style={{
                 background: "rgba(255, 248, 240, 0.035)",
                 border: "1px solid rgba(255, 241, 201, 0.08)",
+                marginBottom: "16px",
               }}
             >
               <h3
-                className="text-sm font-medium mb-3"
+                className="text-sm font-medium mb-4"
                 style={{ color: "rgba(255, 255, 255, 0.6)" }}
               >
                 中奖名单（{winners.length}）
@@ -212,7 +217,7 @@ export function ControlPanel() {
               >
                 {winners.length === 0 ? (
                   <p
-                    className="text-xs"
+                    className="text-xs leading-relaxed"
                     style={{ color: "rgba(255, 255, 255, 0.3)" }}
                   >
                     暂无中奖者
@@ -250,7 +255,7 @@ export function ControlPanel() {
               </div>
               {winners.length > 0 && (
                 <p
-                  className="text-xs mt-1"
+                  className="text-xs mt-2 leading-relaxed"
                   style={{ color: "rgba(255, 255, 255, 0.25)" }}
                 >
                   点击 × 可撤销中奖（如来宾不在现场）
@@ -261,32 +266,30 @@ export function ControlPanel() {
             {/* Reset */}
             <button
               onClick={reset}
-              className="w-full px-4 py-3 rounded-[18px] text-sm cursor-pointer transition-all hover:brightness-110"
+              className="w-full px-4 py-3.5 rounded-[18px] text-sm cursor-pointer transition-all hover:brightness-110"
               style={{
                 background: "rgba(120, 18, 34, 0.52)",
                 border: "1px solid rgba(255, 224, 224, 0.22)",
                 color: "rgba(255, 232, 232, 0.88)",
+                display: "block",
+                marginBottom: "16px",
               }}
             >
               重置所有
             </button>
 
             <div
-              className="mt-5 rounded-[16px] p-4"
+              className="mt-6 rounded-[16px] p-4"
               style={{
                 background: "rgba(255, 248, 240, 0.035)",
                 border: "1px solid rgba(255, 241, 201, 0.08)",
-                padding: "6px 6px",
+                marginBottom: "16px",
               }}
             >
-              <div className="flex items-center justify-between gap-4 mb-3">
+              <div className="flex items-center justify-between gap-4 mb-4">
                 <h3
                   className="text-sm font-medium"
-                  style={{
-                    color: "rgba(255, 255, 255, 0.6)",
-                    marginTop: "10px",
-                    padding: "4px 6px",
-                  }}
+                  style={{ color: "rgba(255, 255, 255, 0.6)" }}
                 >
                   音量
                 </h3>
@@ -307,11 +310,11 @@ export function ControlPanel() {
                 step="0.01"
                 value={masterVolume}
                 onChange={(e) => handleVolumeChange(Number(e.target.value))}
-                className="w-full cursor-pointer"
+                className="w-full cursor-pointer align-middle"
                 style={{ accentColor: "#d9bf92" }}
               />
               <p
-                className="text-xs mt-2"
+                className="text-xs mt-3 leading-relaxed"
                 style={{ color: "rgba(255, 255, 255, 0.3)" }}
               >
                 默认已提高主音量，可按现场设备继续微调
@@ -320,25 +323,20 @@ export function ControlPanel() {
 
             {/* Keyboard shortcuts */}
             <div
-              className="mt-5 rounded-[10px] p-4"
+              className="mt-6 rounded-[16px] p-4"
               style={{
                 background: "rgba(255, 248, 240, 0.035)",
                 border: "1px solid rgba(255, 241, 201, 0.08)",
-                padding: "8px 8px",
-                marginTop: "10px",
               }}
             >
               <h3
-                className="text-sm font-medium mb-3"
-                style={{
-                  color: "rgba(255, 255, 255, 0.6)",
-                  padding: "4px 6px",
-                }}
+                className="text-sm font-medium mb-4"
+                style={{ color: "rgba(255, 255, 255, 0.6)" }}
               >
                 快捷键
               </h3>
               <div
-                className="space-y-2.5 text-xs"
+                className="space-y-3 text-xs"
                 style={{ color: "rgba(255, 255, 255, 0.4)" }}
               >
                 <div className="flex items-center justify-between gap-4">

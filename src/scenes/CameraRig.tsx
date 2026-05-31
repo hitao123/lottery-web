@@ -19,8 +19,8 @@ export function CameraRig() {
       // 保证抽奖球与新郎新娘都完整在画面内，不会被拉近切掉。
       camera.position.x = layout.cameraPosition[0] + Math.sin(t * 0.24) * 0.24
       camera.position.y = layout.cameraPosition[1] + 0.3 + Math.cos(t * 0.34) * 0.05
-      camera.position.z = layout.cameraPosition[2] + 2.4 + Math.sin(t * 0.22) * 0.12
-      camera.lookAt(layout.target[0], layout.target[1] - 0.45, layout.target[2])
+      camera.position.z = layout.cameraPosition[2] + 2.7 + Math.sin(t * 0.22) * 0.12
+      camera.lookAt(layout.target[0], layout.target[1] - 0.58, layout.target[2])
     }
 
     if (phase !== 'spinning') {

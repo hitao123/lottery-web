@@ -1,10 +1,13 @@
 import { GoldParticles } from '@/components/three/GoldParticles'
 import { Fireworks } from '@/components/three/Fireworks'
+
+export const SCENE_BACKGROUND_COLOR = 0x3f0d14
+
 export function Environment() {
   return (
     <group>
-      <color attach="background" args={[0x140d08]} />
-      <fog attach="fog" args={[0x3e2e22, 24, 60]} />
+      <color attach="background" args={[SCENE_BACKGROUND_COLOR]} />
+      <fog attach="fog" args={[0x5a1b22, 24, 60]} />
       <GoldParticles />
       <Fireworks />
       <ambientLight intensity={0.96} color={0xfff4ea} />
