@@ -12,6 +12,22 @@ export function ControlPanel() {
   const guests = useLotteryStore((s) => s.guests)
   const reset = useLotteryStore((s) => s.reset)
   const removeWinner = useLotteryStore((s) => s.removeWinner)
+  const currentRound = useLotteryStore((s) => s.currentRound)
+  const phase = useLotteryStore((s) => s.phase)
+
+  const totalGuests = guests.length
+  const wonCount = winners.length
+  const remaining = totalGuests - wonCount
+  const phaseHint =
+    phase === 'idle'
+      ? 'Space 开始洗牌'
+      : phase === 'spinning'
+        ? '抽奖箱洗牌中，按 S 最终锁定中奖者'
+        : phase === 'chasing'
+          ? '正在从抽奖箱中筛出幸运来宾...'
+          : phase === 'locking'
+            ? '幸运来宾锁定中'
+            : 'Enter / N 下一轮 | F 全屏'
 
   const handleImport = () => {
     const match = rangeInput.match(/^(\d+)-(\d+)$/)
@@ -97,6 +113,33 @@ export function ControlPanel() {
               >
                 ×
               </button>
+            </div>
+
+            {/* Draw progress (moved from bottom status bar) */}
+            <div
+              className="mb-5 rounded-[22px] p-4"
+              style={{
+                background: "rgba(255, 248, 240, 0.035)",
+                border: "1px solid rgba(255, 241, 201, 0.08)",
+              }}
+            >
+              <div className="flex items-center justify-between gap-3 mb-2">
+                <span style={{ color: "#fff1c9", fontWeight: 600, fontSize: "14px" }}>
+                  第{currentRound}轮
+                </span>
+                <span style={{ color: "rgba(255, 248, 240, 0.56)", fontSize: "13px" }}>
+                  剩余 {remaining} 人
+                </span>
+              </div>
+              <div style={{ color: "rgba(255, 248, 240, 0.78)", fontSize: "13px" }}>
+                已抽 <strong style={{ color: "#fff1c9" }}>{wonCount}</strong> / {totalGuests} 人
+              </div>
+              <p
+                className="text-xs mt-2"
+                style={{ color: "rgba(255, 255, 255, 0.3)" }}
+              >
+                {phaseHint}
+              </p>
             </div>
 
             {/* Number import */}

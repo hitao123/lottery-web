@@ -42,7 +42,7 @@ export const Card = memo(
         rotation={initialRotation}
         scale={scale}
       >
-        <mesh geometry={cardGeometry}>
+        <mesh geometry={cardGeometry} renderOrder={2}>
           <meshPhysicalMaterial map={texture} {...cardMaterialProps} />
         </mesh>
       </group>

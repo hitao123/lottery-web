@@ -12,8 +12,10 @@ export function PostProcessing() {
     [settings.chromaticOffset]
   )
 
+  if (phase === 'idle') return null
+
   return (
-    <EffectComposer multisampling={0} resolutionScale={0.75}>
+    <EffectComposer multisampling={0} resolutionScale={0.65}>
       <Bloom
         intensity={settings.bloomIntensity}
         luminanceThreshold={settings.luminanceThreshold}

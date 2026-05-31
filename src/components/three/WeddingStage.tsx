@@ -13,16 +13,31 @@ const deepRedMaterial = new THREE.MeshStandardMaterial({ color: '#8f6947', rough
 const roseMaterial = new THREE.MeshStandardMaterial({ color: '#f0d7cb', roughness: 0.9 })
 const blushMaterial = new THREE.MeshStandardMaterial({ color: '#fae8df', roughness: 0.94 })
 const leafMaterial = new THREE.MeshStandardMaterial({ color: '#6f8c5b', roughness: 0.9 })
-const boxGlassMaterial = new THREE.MeshPhysicalMaterial({
-  color: '#b62538',
+// 透明玻璃球罩。不使用 transmission（避免额外 render pass），仅靠低透明度 + clearcoat
+// 模拟玻璃质感；depthWrite 关闭让内部红球/卡片正确透出，且减轻透明排序问题。
+const globeGlassMaterial = new THREE.MeshPhysicalMaterial({
+  color: '#ffe9ec',
   transparent: true,
-  opacity: 0.52,
-  transmission: 0.08,
-  roughness: 0.2,
-  thickness: 0.16,
+  opacity: 0.16,
+  roughness: 0.08,
+  metalness: 0,
+  transmission: 0,
+  thickness: 0.2,
   clearcoat: 1,
-  clearcoatRoughness: 0.14,
+  clearcoatRoughness: 0.06,
+  side: THREE.FrontSide,
+  depthWrite: false,
 })
+
+// 红色小球（抽奖机内翻滚的彩球）。共享几何 + 共享材质 + InstancedMesh，几乎零额外开销。
+const redBallMaterial = new THREE.MeshStandardMaterial({
+  color: '#c81f33',
+  roughness: 0.34,
+  metalness: 0.12,
+  emissive: new THREE.Color('#5e0c16'),
+  emissiveIntensity: 0.2,
+})
+const ballGeometry = new THREE.SphereGeometry(0.07, 14, 14)
 
 function WeddingModel({
   path,
@@ -129,6 +144,58 @@ function Drapery({ side }: { side: 'left' | 'right' }) {
   )
 }
 
+const RED_BALL_COUNT = 30
+
+/**
+ * 抽奖机玻璃球内翻滚的红色小球。
+ * - idle：缓慢悬浮、轻微起伏（节能）
+ * - spinning / chasing：高速绕轴翻滚 + 半径脉动，呼应卡片的"洗牌"节奏
+ * 使用单个 InstancedMesh，每帧仅更新 30 个矩阵，CPU/GPU 开销极小。
+ */
+function RedBalls({ radius = 0.6 }: { radius?: number }) {
+  const phase = useLotteryStore((s) => s.phase)
+  const meshRef = useRef<THREE.InstancedMesh>(null)
+  const dummy = useMemo(() => new THREE.Object3D(), [])
+
+  const balls = useMemo(() => {
+    return Array.from({ length: RED_BALL_COUNT }, () => ({
+      baseR: radius * (0.32 + Math.random() * 0.62),
+      theta: Math.random() * Math.PI * 2,
+      phi: Math.acos(2 * Math.random() - 1),
+      speed: 0.6 + Math.random() * 0.95,
+      swirl: Math.random() * Math.PI * 2,
+      bob: Math.random() * Math.PI * 2,
+      scale: 0.7 + Math.random() * 0.6,
+    }))
+  }, [radius])
+
+  useFrame((state) => {
+    const mesh = meshRef.current
+    if (!mesh) return
+    const t = state.clock.elapsedTime
+    const churn = phase === 'spinning' || phase === 'chasing'
+
+    for (let i = 0; i < RED_BALL_COUNT; i++) {
+      const b = balls[i]
+      const speed = b.speed * (churn ? 3.2 : 0.45)
+      const ang = b.theta + t * speed + b.swirl
+      const vAng = b.phi + Math.sin(t * (churn ? 2.4 : 0.5) * b.speed + b.bob) * (churn ? 0.95 : 0.16)
+      const rr = churn
+        ? b.baseR * (0.6 + 0.45 * Math.abs(Math.sin(t * b.speed + b.swirl)))
+        : b.baseR
+      const sinV = Math.sin(vAng)
+      dummy.position.set(rr * sinV * Math.cos(ang), rr * Math.cos(vAng), rr * sinV * Math.sin(ang))
+      dummy.scale.setScalar(b.scale)
+      dummy.rotation.set(ang, vAng, 0)
+      dummy.updateMatrix()
+      mesh.setMatrixAt(i, dummy.matrix)
+    }
+    mesh.instanceMatrix.needsUpdate = true
+  })
+
+  return <instancedMesh ref={meshRef} args={[ballGeometry, redBallMaterial, RED_BALL_COUNT]} />
+}
+
 const WeddingStageInner = () => {
   const phase = useLotteryStore((s) => s.phase)
   const currentWinner = useLotteryStore((s) => s.currentWinner)
@@ -182,6 +249,8 @@ const WeddingStageInner = () => {
         <meshStandardMaterial color="#dbc192" metalness={0.5} roughness={0.36} />
       </mesh>
 
+      {/* 背景板（人物身后的装饰整体上移一点，与人物拉开距离） */}
+      <group position={[0, 0.55, 0]}>
       <mesh castShadow receiveShadow position={[0, 3.7, -8.15]}>
         <boxGeometry args={[8.8, 5.2, 0.4]} />
         <meshStandardMaterial color="#fbf1e5" roughness={0.84} />
@@ -222,27 +291,26 @@ const WeddingStageInner = () => {
       <FlowerCluster position={[4.7, 5.16, -7.42]} scale={1.45} rotation={-0.3} />
       <FlowerCluster position={[-5.05, 2.35, -7.1]} scale={1.22} rotation={0.8} />
       <FlowerCluster position={[5.05, 2.35, -7.1]} scale={1.22} rotation={-0.8} />
+      </group>
+
       <FlowerCluster position={[-2.75, 0.62, 0.82]} scale={1.15} rotation={0.55} />
       <FlowerCluster position={[2.75, 0.62, 0.82]} scale={1.15} rotation={-0.55} />
 
       <mesh castShadow receiveShadow position={[0, 0.3, 0.96]} material={redMaterial}>
         <cylinderGeometry args={[2.2, 2.4, 0.24, 40]} />
       </mesh>
-      <mesh castShadow position={[0, 0.46, 1.02]} material={goldMaterial}>
-        <torusGeometry args={[2.18, 0.07, 16, 48]} />
-      </mesh>
 
       <WeddingModel
-        path="/models/bride.glb"
-        position={[-2.55, 0.54, 0.78]}
-        rotation={[0, 0.08, 0]}
+        path="/models/bride.sm.glb"
+        position={[-3.55, 0.54, 0.6]}
+        rotation={[0, 0.18, 0]}
         scale={3.18}
         variant="bride"
       />
       <WeddingModel
-        path="/models/groom.glb"
-        position={[2.55, 0.52, 0.74]}
-        rotation={[0, -0.08, 0]}
+        path="/models/groom.sm.glb"
+        position={[3.55, 0.52, 0.56]}
+        rotation={[0, -0.18, 0]}
         scale={3.18}
         variant="groom"
       />
@@ -271,26 +339,34 @@ const WeddingStageInner = () => {
         </Text>
       </group>
 
-      <group position={[0, 0.92, 1.02]}>
-        <mesh castShadow receiveShadow material={boxGlassMaterial}>
-          <boxGeometry args={[3.02, 1.82, 2.18]} />
+      <group position={[0, 0.55, 1.7]}>
+        {/* 底盘（坐在红毯前沿） */}
+        <mesh castShadow receiveShadow position={[0, -0.62, 0]} material={redMaterial}>
+          <cylinderGeometry args={[0.62, 0.72, 0.16, 44]} />
         </mesh>
-        <mesh castShadow receiveShadow position={[0, -0.52, 0]} material={redMaterial}>
-          <boxGeometry args={[2.7, 0.16, 1.82]} />
+        {/* 金色支柱 */}
+        <mesh castShadow receiveShadow position={[0, -0.42, 0]} material={goldMaterial}>
+          <cylinderGeometry args={[0.3, 0.46, 0.32, 32]} />
         </mesh>
-        <mesh castShadow position={[0, 1.02, 0]} material={goldMaterial}>
-          <boxGeometry args={[3.14, 0.12, 2.28]} />
+
+        {/* 内部翻滚的红色小球（球体中心 local +0.2） */}
+        <group position={[0, 0.2, 0]}>
+          <RedBalls radius={0.62} />
+        </group>
+
+        {/* 透明玻璃球罩（最后绘制、不写深度，保证内部正确透出） */}
+        <mesh position={[0, 0.2, 0]} renderOrder={6} material={globeGlassMaterial}>
+          <sphereGeometry args={[0.85, 40, 40]} />
         </mesh>
-        <mesh castShadow position={[0, 0.18, 1.05]} material={goldMaterial}>
-          <boxGeometry args={[2.9, 0.08, 0.08]} />
-        </mesh>
-        <mesh castShadow position={[0, -0.08, 1.12]} material={goldMaterial}>
-          <boxGeometry args={[1.42, 0.36, 0.1]} />
+
+        {/* 名牌 */}
+        <mesh castShadow position={[0, -0.62, 0.74]} material={goldMaterial}>
+          <boxGeometry args={[0.78, 0.2, 0.05]} />
         </mesh>
         <Text
-          position={[0, -0.08, 1.19]}
+          position={[0, -0.62, 0.78]}
           rotation={[0, 0, 0]}
-          fontSize={0.18}
+          fontSize={0.11}
           color="#fff7ef"
           anchorX="center"
           anchorY="middle"
@@ -298,19 +374,12 @@ const WeddingStageInner = () => {
         >
           抽奖箱
         </Text>
-        <mesh castShadow position={[0, -0.8, 0]} material={goldMaterial}>
-          <cylinderGeometry args={[1.05, 1.12, 0.12, 32]} />
-        </mesh>
-        <mesh position={[0, 0.2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-          <circleGeometry args={[1.45, 40]} />
-          <meshBasicMaterial color="#f7dcb0" transparent opacity={0.18} />
-        </mesh>
       </group>
     </group>
   )
 }
 
-useGLTF.preload('/models/bride.glb')
-useGLTF.preload('/models/groom.glb')
+useGLTF.preload('/models/bride.sm.glb')
+useGLTF.preload('/models/groom.sm.glb')
 
 export const WeddingStage = memo(WeddingStageInner)

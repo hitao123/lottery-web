@@ -102,10 +102,10 @@ function createCardTexture({ code, width, height }: Required<CardTextureOptions>
 
   const tex = new THREE.CanvasTexture(canvas)
   tex.colorSpace = THREE.SRGBColorSpace
-  tex.generateMipmaps = false
-  tex.minFilter = THREE.LinearFilter
+  tex.generateMipmaps = true
+  tex.minFilter = THREE.LinearMipMapLinearFilter
   tex.magFilter = THREE.LinearFilter
-  tex.anisotropy = 1
+  tex.anisotropy = 4
   tex.needsUpdate = true
   return tex
 }
@@ -114,7 +114,7 @@ function createCardTexture({ code, width, height }: Required<CardTextureOptions>
  * Creates a softer invitation-style wedding card so the backdrop matches
  * the chibi couple instead of fighting them with a hard sci-fi material.
  */
-export function useCardTexture({ code, width = 256, height = 424 }: CardTextureOptions) {
+export function useCardTexture({ code, width = 192, height = 320 }: CardTextureOptions) {
   const texture = useMemo(() => {
     const cacheKey = `${code}:${width}x${height}`
     const cached = textureCache.get(cacheKey)

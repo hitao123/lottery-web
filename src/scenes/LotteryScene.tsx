@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import { ContactShadows, OrbitControls } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
 import { Environment } from './Environment'
@@ -32,8 +32,8 @@ export function LotteryScene() {
   return (
     <Canvas
       camera={{ position: layout.cameraPosition, fov: layout.fov, near: 0.1, far: 300 }}
-      shadows
-      gl={{ antialias: true, alpha: false, powerPreference: 'high-performance' }}
+      shadows={false}
+      gl={{ antialias: true, alpha: false, powerPreference: 'default' }}
       style={{
         position: 'absolute',
         top: 0,
@@ -42,7 +42,8 @@ export function LotteryScene() {
         height: '100%',
         background: 'radial-gradient(circle at 50% 10%, #8c2130 0%, #3f0d14 42%, #120406 100%)',
       }}
-      dpr={[1, 1.5]}
+      dpr={[1, 2]}
+      resize={{ debounce: 0 }}
     >
       <CameraRig />
       <OrbitControls
@@ -57,11 +58,13 @@ export function LotteryScene() {
         maxAzimuthAngle={0.65}
         target={layout.target}
       />
-      <Environment />
-      <WeddingStage />
-      <CardField />
-      <ContactShadows position={[0, -3.02, -1.4]} scale={layout.shadowScale} blur={2.1} far={1.8} opacity={0.08} />
-      <PostProcessing />
+      <Suspense fallback={null}>
+        <Environment />
+        <WeddingStage />
+        <CardField />
+        <ContactShadows position={[0, -3.02, -1.4]} scale={layout.shadowScale} blur={2.1} far={1.8} opacity={0.08} />
+        <PostProcessing />
+      </Suspense>
     </Canvas>
   )
 }
