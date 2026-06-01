@@ -24,7 +24,16 @@ export type LotteryStore = {
   setPhase: (phase: LotteryPhase) => void
   addGuests: (codes: string[]) => void
   startDraw: () => void
+  /**
+   * 本地伪随机抽奖（基于 Math.random）。保留作为后端不可用时的兜底，
+   * 调用方一般应优先使用 selectWinnerAsync。
+   */
   selectWinner: () => Guest | null
+  /**
+   * 调用后端 /api/lottery/draw 进行加密安全抽奖。
+   * 失败/超时时自动降级为 selectWinner()，保证体验不被打断。
+   */
+  selectWinnerAsync: () => Promise<Guest | null>
   confirmWinner: () => void
   removeWinner: (guestId: number) => void
   nextRound: () => void

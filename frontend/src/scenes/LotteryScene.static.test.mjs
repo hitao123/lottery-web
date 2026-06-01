@@ -5,6 +5,7 @@ import assert from 'node:assert/strict'
 const lotterySceneSource = readFileSync(new URL('./LotteryScene.tsx', import.meta.url), 'utf8')
 const environmentSource = readFileSync(new URL('./Environment.tsx', import.meta.url), 'utf8')
 const weddingStageSource = readFileSync(new URL('../components/three/WeddingStage.tsx', import.meta.url), 'utf8')
+const viteConfigSource = readFileSync(new URL('../../vite.config.ts', import.meta.url), 'utf8')
 
 test('Canvas initializes the red scene background before Suspense children resolve', () => {
   assert.match(lotterySceneSource, /import \* as THREE from 'three'/)
@@ -40,4 +41,10 @@ test('winner board is hidden immediately when the next round clears currentWinne
   assert.match(weddingStageSource, /board\.visible = false/)
   assert.match(weddingStageSource, /board\.scale\.setScalar\(0\.001\)/)
   assert.match(weddingStageSource, /useLayoutEffect\(\(\) => \{\n    if \(!showWinnerBoard\) hideWinnerBoard\(\)\n  \}, \[showWinnerBoard\]\)/)
+})
+
+test('Vite dev server proxies API requests to the Go backend', () => {
+  assert.match(viteConfigSource, /server:\s*\{[\s\S]*proxy:\s*\{[\s\S]*['"]\/api['"]:/)
+  assert.match(viteConfigSource, /target:\s*['"]http:\/\/localhost:8080['"],/)
+  assert.match(viteConfigSource, /changeOrigin:\s*true/)
 })

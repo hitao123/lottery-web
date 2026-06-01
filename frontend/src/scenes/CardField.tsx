@@ -14,7 +14,7 @@ import {
 
 export function CardField() {
   const setPhase = useLotteryStore((s) => s.setPhase)
-  const selectWinner = useLotteryStore((s) => s.selectWinner)
+  const selectWinnerAsync = useLotteryStore((s) => s.selectWinnerAsync)
   const camera = useThree((state) => state.camera as THREE.PerspectiveCamera)
   const timelineRef = useRef<gsap.core.Timeline | null>(null)
 
@@ -38,14 +38,18 @@ export function CardField() {
     startBackgroundMusic()
   }, [setPhase])
 
-  const stopSpin = useCallback(() => {
+  const stopSpin = useCallback(async () => {
     const { phase } = useLotteryStore.getState()
     if (phase !== 'spinning') return
 
     stopBackgroundMusic()
 
-    const winner = selectWinner()
+    // 优先调用后端安全随机抽奖；后端不可用时 selectWinnerAsync 内部已降级到本地。
+    const winner = await selectWinnerAsync()
     if (!winner) return
+
+    // 抽奖耗时窗口内 phase 可能被其它流程改写（如用户重置），需要二次确认。
+    if (useLotteryStore.getState().phase !== 'spinning') return
 
     setPhase('chasing')
     playChasingSound()
@@ -122,7 +126,7 @@ export function CardField() {
 
     timelineRef.current = timeline
     timeline.play()
-  }, [camera, selectWinner, setPhase])
+  }, [camera, selectWinnerAsync, setPhase])
 
   useEffect(() => {
     const globals = window as unknown as Record<string, unknown>
