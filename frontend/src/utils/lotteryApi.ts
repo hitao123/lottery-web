@@ -2,6 +2,8 @@ import type { Guest } from '@/types'
 import { DRAW_TIMEOUT_MS, LOTTERY_API_BASE } from '@/config/env'
 
 export type LotteryApiErrorCode = 'TIMEOUT' | 'NETWORK' | 'HTTP' | 'PARSE'
+const ADMIN_TOKEN_STORAGE_KEY = 'lottery-admin-token'
+const PENDING_DRAW_REQUEST_ID_STORAGE_KEY = 'lottery-pending-draw-request-id'
 
 /**
  * 统一的抽奖后端调用错误。调用方根据 code 决定是否降级。
@@ -20,6 +22,9 @@ export class LotteryApiError extends Error {
 
 export interface DrawResponse {
   winners: Guest[]
+  guests: Guest[]
+  currentRound: number
+  total: number
 }
 
 export interface GuestsResponse {
@@ -33,6 +38,31 @@ interface RequestOptions {
   body?: unknown
   timeoutMs?: number
   signal?: AbortSignal
+}
+
+export function getAdminToken() {
+  return window.sessionStorage.getItem(ADMIN_TOKEN_STORAGE_KEY) ?? ''
+}
+
+export function setAdminToken(token: string) {
+  const normalized = token.trim()
+  if (normalized) {
+    window.sessionStorage.setItem(ADMIN_TOKEN_STORAGE_KEY, normalized)
+  } else {
+    window.sessionStorage.removeItem(ADMIN_TOKEN_STORAGE_KEY)
+  }
+}
+
+export function getPendingDrawRequestId() {
+  return window.sessionStorage.getItem(PENDING_DRAW_REQUEST_ID_STORAGE_KEY) ?? ''
+}
+
+export function setPendingDrawRequestId(requestId: string) {
+  if (requestId) {
+    window.sessionStorage.setItem(PENDING_DRAW_REQUEST_ID_STORAGE_KEY, requestId)
+  } else {
+    window.sessionStorage.removeItem(PENDING_DRAW_REQUEST_ID_STORAGE_KEY)
+  }
 }
 
 /**
@@ -50,7 +80,10 @@ async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
   try {
     res = await fetch(`${LOTTERY_API_BASE}${path}`, {
       method,
-      headers: body != null ? { 'Content-Type': 'application/json' } : undefined,
+      headers: {
+        ...(body != null ? { 'Content-Type': 'application/json' } : {}),
+        ...(getAdminToken() ? { 'X-Lottery-Admin-Token': getAdminToken() } : {}),
+      },
       body: body != null ? JSON.stringify(body) : undefined,
       signal: controller.signal,
     })
@@ -83,7 +116,7 @@ async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
 
 /** 上传/重置宾客列表。 */
 export function uploadGuests(codes: string[], signal?: AbortSignal) {
-  return request<{ total: number }>('/guests', {
+  return request<GuestsResponse>('/guests', {
     method: 'POST',
     body: { codes },
     signal,
@@ -96,17 +129,17 @@ export function listGuests(signal?: AbortSignal) {
 }
 
 /** 抽奖。count 默认 1。 */
-export function draw(count = 1, signal?: AbortSignal) {
+export function draw(count: number, requestId: string, signal?: AbortSignal) {
   return request<DrawResponse>('/draw', {
     method: 'POST',
-    body: { count },
+    body: { count, requestId },
     signal,
   })
 }
 
 /** 撤销中奖。 */
 export function revokeWinner(guestId: number, signal?: AbortSignal) {
-  return request<{ ok: boolean }>(`/winners/${guestId}/revoke`, {
+  return request<GuestsResponse>(`/winners/${guestId}/revoke`, {
     method: 'POST',
     signal,
   })
@@ -114,5 +147,5 @@ export function revokeWinner(guestId: number, signal?: AbortSignal) {
 
 /** 全部重置。 */
 export function resetLottery(signal?: AbortSignal) {
-  return request<{ ok: boolean }>('/reset', { method: 'POST', signal })
+  return request<GuestsResponse>('/reset', { method: 'POST', signal })
 }

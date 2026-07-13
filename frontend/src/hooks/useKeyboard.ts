@@ -65,11 +65,12 @@ export function useKeyboard({ onToggleFullscreen }: UseKeyboardOptions) {
         }
         case 'KeyR': {
           if (phase === 'idle' || phase === 'revealed') {
-            const resetFn = (window as unknown as Record<string, unknown>).__lotteryResetCards
-            if (typeof resetFn === 'function') {
-              (resetFn as () => void)()
-            }
-            useLotteryStore.getState().reset()
+            if (!window.confirm('确定重置全部中奖记录吗？此操作会立即保存。')) return
+            void useLotteryStore.getState().reset().then((ok) => {
+              if (!ok) return
+              const resetFn = (window as unknown as Record<string, unknown>).__lotteryResetCards
+              if (typeof resetFn === 'function') (resetFn as () => void)()
+            })
           }
           break
         }

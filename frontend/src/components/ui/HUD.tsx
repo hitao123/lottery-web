@@ -1,4 +1,6 @@
 import { ControlPanel } from './ControlPanel'
+import { StatusBar } from './StatusBar'
+import { WinnerReveal } from './WinnerReveal'
 
 export function HUD() {
   return (
@@ -22,6 +24,8 @@ export function HUD() {
       <div className="pointer-events-auto">
         <ControlPanel />
       </div>
+      <StatusBar />
+      <WinnerReveal />
     </div>
   )
 }

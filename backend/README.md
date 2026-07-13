@@ -1,81 +1,50 @@
 # lottery-server
 
-`lottery-web` 项目的抽奖后端，使用 Go + Gin 实现，提供加密安全的随机抽奖（基于 `crypto/rand.Int`，等价于 Node 的 `crypto.randomInt`），用于替换前端 `Math.floor(Math.random() * available.length)`。
-
-## 安全随机说明
-
-| 方案 | 来源 | 取模偏差 | 是否加密安全 |
-|---|---|---|---|
-| `Math.random()`                          | V8 xorshift128+ | 取决于实现 | 否 |
-| `crypto.getRandomValues + (% n)`         | OS CSPRNG       | **存在**   | 是 |
-| `crypto.getRandomValues + rejection`     | OS CSPRNG       | 无         | 是 |
-| Go `rand.Int(rand.Reader, big.NewInt(n))`| OS CSPRNG       | 无（内置 rejection sampling） | 是 |
-
-本服务使用第四种，并封装为 `lottery.SecureIndex` / `lottery.SecureShuffle`。
+婚礼抽奖后端（Go + Gin）。它是名单、轮次和中奖记录的唯一事实来源，使用 `crypto/rand` 进行无偏安全随机抽取。
 
 ## 运行
 
 ```bash
-# 直接运行
 cd backend
+LOTTERY_ADMIN_TOKEN='现场操作密码' \
+CORS_ALLOW_ORIGIN='http://localhost:5173' \
 go run .
-
-# 自定义端口
-PORT=9090 go run .
-
-# Docker
-docker build -t lottery-server -f Dockerfile .
-docker run --rm -p 8080:8080 lottery-server
 ```
+
+Docker Compose 部署前，复制根目录 `.env.example` 为 `.env` 并替换 `LOTTERY_ADMIN_TOKEN`；Compose 会拒绝在未设置密码时启动。状态保存于 Docker volume `lottery-data`，重启容器不会清空抽奖记录。
 
 ## 环境变量
 
-| 变量 | 默认值 | 说明 |
-|---|---|---|
-| `PORT`              | `8080` | HTTP 监听端口 |
-| `GIN_MODE`          | `release` | Gin 模式，可设为 `debug` |
-| `CORS_ALLOW_ORIGIN` | `*` | 开发态 CORS 白名单；线上经 Nginx 同源代理可忽略 |
+| 变量 | 默认值 | 用途 |
+| --- | --- | --- |
+| `PORT` | `8080` | HTTP 端口 |
+| `LOTTERY_DATA_FILE` | `./data/lottery-state.json` | 状态文件路径；Docker 使用 `/data/lottery-state.json` |
+| `LOTTERY_ADMIN_TOKEN` | 空（仅本地开发） | API 操作密码。线上必须设置 |
+| `CORS_ALLOW_ORIGIN` | 空 | 仅 Vite 跨源开发时设置；线上 Nginx 同源时无需设置 |
+| `GIN_MODE` | `release` | Gin 模式 |
 
-## HTTP 接口
+所有 `/api/lottery/*` 接口在设置操作密码后都需要请求头 `X-Lottery-Admin-Token`。前端控制面板会把用户输入的密码只保存在当前标签页的 `sessionStorage`。
 
-所有响应均为 `application/json`。错误响应：`{ "error": "...", "code": "..." }`。
+## 接口
 
 | 方法 | 路径 | 说明 |
-|---|---|---|
-| `GET`  | `/healthz`                      | 健康检查 |
-| `POST` | `/api/lottery/guests`           | 覆盖式上传宾客列表 `{ "codes": ["001","002",...] }` |
-| `GET`  | `/api/lottery/guests`           | 查询全量宾客与当前轮次 |
-| `POST` | `/api/lottery/draw`             | 抽奖 `{ "count": 1 }`；返回 `{ "winners": Guest[] }` |
-| `POST` | `/api/lottery/winners/:id/revoke` | 撤销中奖 |
-| `POST` | `/api/lottery/reset`            | 全部重置 |
+| --- | --- | --- |
+| GET | `/healthz` | 健康检查，不要求操作密码 |
+| GET | `/api/lottery/guests` | 获取完整权威快照 |
+| POST | `/api/lottery/guests` | 覆盖导入名单，返回完整快照 |
+| POST | `/api/lottery/draw` | 安全抽取；返回中奖者和完整快照 |
+| GET | `/api/lottery/draws/:requestID` | 获取已提交抽奖的原始结果，用于超时恢复 |
+| POST | `/api/lottery/winners/:id/revoke` | 撤销中奖，返回完整快照 |
+| POST | `/api/lottery/reset` | 清空中奖记录，返回完整快照 |
 
-### Guest 数据结构（与前端 `frontend/src/types/Guest` 对齐）
+名单限制：最多 5,000 人，编号去除首尾空白后不得为空、不得重复、长度不超过 128 字符。请求体最大 1 MiB。
 
-```json
-{
-  "id": 1,
-  "code": "001",
-  "hasWon": false,
-  "wonAtRound": 1
-}
-```
+`POST /draw` 必须携带客户端生成的 `requestId`。同一 ID 重试只会返回第一次提交的中奖结果，不会再抽一人。
 
 ## 测试
 
 ```bash
 cd backend
 go test ./...
+go vet ./...
 ```
-
-包含：
-- `SecureIndex` 范围与近似均匀分布测试
-- `SecureShuffle` 不丢元素
-- `Store.Draw` 多人抽奖无重复
-- 并发 200 次 Draw 不重复中奖
-- `Revoke` / `Reset` 语义
-
-## 与前端的契约
-
-- 前端 `useLotteryStore.selectWinnerAsync` 调用 `POST /api/lottery/draw`
-- 调用失败或超时（默认 1500ms）自动降级为本地 `Math.random()`，体验不受影响
-- 生产环境通过 Nginx 反向代理：浏览器 → `https://<host>/api/...` → `http://api:8080/api/...`

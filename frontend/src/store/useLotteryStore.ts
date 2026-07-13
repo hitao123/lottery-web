@@ -1,126 +1,144 @@
 import { create } from 'zustand'
 import type { Guest, LotteryPhase, LotteryStore } from '@/types'
-import { LotteryApiError, draw as apiDraw, uploadGuests as apiUploadGuests } from '@/utils/lotteryApi'
+import {
+  draw as apiDraw,
+  getPendingDrawRequestId,
+  listGuests,
+  LotteryApiError,
+  resetLottery,
+  revokeWinner,
+  setPendingDrawRequestId,
+  uploadGuests,
+  type GuestsResponse,
+} from '@/utils/lotteryApi'
+
+function winnersFrom(guests: Guest[]) {
+  return guests.filter((guest) => guest.hasWon)
+}
+
+function snapshotState(snapshot: GuestsResponse) {
+  return {
+    guests: snapshot.guests,
+    winners: winnersFrom(snapshot.guests),
+    currentRound: snapshot.currentRound,
+  }
+}
+
+function messageFor(error: unknown) {
+  if (error instanceof LotteryApiError) {
+    if (error.status === 401) return '需要先在控制面板输入操作密码。'
+    if (error.code === 'TIMEOUT') return '抽奖请求超时。请重新开始并按 S 重试；系统会恢复同一次抽奖，不会另抽一人。'
+    return `服务请求失败：${error.message}`
+  }
+  return '发生未知错误，请检查服务连接后重试。'
+}
+
+function newDrawRequestId() {
+  return crypto.randomUUID()
+}
 
 export const useLotteryStore = create<LotteryStore>((set, get) => ({
-  // Initial state
   phase: 'idle' as LotteryPhase,
   guests: [],
   winners: [],
   currentRound: 1,
   currentWinner: null,
+  isLoading: false,
+  isDrawing: false,
+  error: null,
 
-  // Actions
   setPhase: (phase) => set({ phase }),
 
-  addGuests: (codes) => {
-    const guests: Guest[] = codes.map((code, index) => ({
-      id: index + 1,
-      code,
-      hasWon: false,
-    }))
-    set({ guests })
-
-    // 同步上传到后端（best-effort，失败仅打印 warn，不影响本地抽奖）。
-    apiUploadGuests(codes).catch((err) => {
-      // eslint-disable-next-line no-console
-      console.warn('[lottery] uploadGuests to backend failed, fallback to local only:', err)
-    })
-  },
-
-  startDraw: () => {
-    const { phase } = get()
-    if (phase !== 'idle') return
-    set({ phase: 'spinning' })
-  },
-
-  selectWinner: () => {
-    const { guests } = get()
-    const available = guests.filter((g) => !g.hasWon)
-    if (available.length === 0) return null
-    const randomIndex = Math.floor(Math.random() * available.length)
-    const winner = available[randomIndex]
-    set({ currentWinner: winner })
-    return winner
-  },
-
-  selectWinnerAsync: async () => {
-    const { guests } = get()
-    const available = guests.filter((g) => !g.hasWon)
-    if (available.length === 0) return null
-
+  loadLottery: async () => {
+    set({ isLoading: true, error: null })
     try {
-      const { winners } = await apiDraw(1)
-      const remoteWinner = winners[0]
-      if (!remoteWinner) {
-        // 后端返回空数组视为异常，降级到本地。
-        return get().selectWinner()
-      }
-
-      // 在本地 guests 中按 id 定位；若 id 不匹配（例如 guests 仅在前端存在），
-      // 退回按 code 匹配。两者都失败则降级到本地。
-      const localMatch =
-        guests.find((g) => g.id === remoteWinner.id) ??
-        guests.find((g) => g.code === remoteWinner.code)
-
-      if (!localMatch) {
-        return get().selectWinner()
-      }
-
-      set({ currentWinner: localMatch })
-      return localMatch
-    } catch (err) {
-      const code = err instanceof LotteryApiError ? err.code : 'UNKNOWN'
-      // eslint-disable-next-line no-console
-      console.warn(`[lottery] backend draw failed (${code}), fallback to local random:`, err)
-      return get().selectWinner()
+      const snapshot = await listGuests()
+      set({ ...snapshotState(snapshot), currentWinner: null })
+    } catch (error) {
+      set({ error: messageFor(error) })
+    } finally {
+      set({ isLoading: false })
     }
   },
 
-  confirmWinner: () => {
-    const { currentWinner, guests, winners, currentRound } = get()
-    if (!currentWinner) return
-    // Prevent double-confirm
-    if (winners.some((w) => w.id === currentWinner.id)) return
-    const updatedGuests = guests.map((g) =>
-      g.id === currentWinner.id
-        ? { ...g, hasWon: true, wonAtRound: currentRound }
-        : g
-    )
-    set({
-      guests: updatedGuests,
-      winners: [...winners, { ...currentWinner, hasWon: true, wonAtRound: currentRound }],
-    })
+  addGuests: async (codes) => {
+    if (get().isLoading || get().isDrawing) return false
+    set({ isLoading: true, error: null })
+    try {
+      const snapshot = await uploadGuests(codes)
+      setPendingDrawRequestId('')
+      set({ ...snapshotState(snapshot), phase: 'idle', currentWinner: null })
+      return true
+    } catch (error) {
+      set({ error: messageFor(error) })
+      return false
+    } finally {
+      set({ isLoading: false })
+    }
   },
 
-  removeWinner: (guestId: number) => {
-    const { guests, winners } = get()
-    // Mark guest as not won, remove from winners list
-    const updatedGuests = guests.map((g) =>
-      g.id === guestId ? { ...g, hasWon: false, wonAtRound: undefined } : g
-    )
-    const updatedWinners = winners.filter((w) => w.id !== guestId)
-    set({
-      guests: updatedGuests,
-      winners: updatedWinners,
-    })
+  startDraw: () => {
+    const { phase, guests, isDrawing } = get()
+    if (phase !== 'idle' || (guests.every((guest) => guest.hasWon) && !getPendingDrawRequestId()) || isDrawing) return
+    set({ phase: 'spinning', error: null })
   },
 
-  nextRound: () => {
-    const { currentRound } = get()
-    set({
-      phase: 'idle',
-      currentRound: currentRound + 1,
-      currentWinner: null,
-    })
+  selectWinnerAsync: async () => {
+    const { guests, isDrawing } = get()
+    const requestId = getPendingDrawRequestId() || newDrawRequestId()
+    if (isDrawing || (guests.every((guest) => guest.hasWon) && !getPendingDrawRequestId())) return null
+
+    setPendingDrawRequestId(requestId)
+    set({ isDrawing: true, error: null })
+    try {
+      const response = await apiDraw(1, requestId)
+      const winner = response.winners[0]
+      if (!winner) throw new Error('draw response did not include a winner')
+
+      setPendingDrawRequestId('')
+      set({ ...snapshotState(response), currentWinner: winner })
+      return winner
+    } catch (error) {
+      set({ error: messageFor(error) })
+      return null
+    } finally {
+      set({ isDrawing: false })
+    }
   },
 
-  reset: () =>
-    set({
-      phase: 'idle',
-      guests: get().guests.map((g) => ({ ...g, hasWon: false, wonAtRound: undefined })),
-      winners: [],
-      currentRound: 1,
-      currentWinner: null,
-    }),
+  removeWinner: async (guestId) => {
+    if (get().isLoading || get().isDrawing) return false
+    set({ isLoading: true, error: null })
+    try {
+      const snapshot = await revokeWinner(guestId)
+      setPendingDrawRequestId('')
+      set({ ...snapshotState(snapshot) })
+      return true
+    } catch (error) {
+      set({ error: messageFor(error) })
+      return false
+    } finally {
+      set({ isLoading: false })
+    }
+  },
+
+  nextRound: () => set({ phase: 'idle', currentWinner: null }),
+
+  reset: async () => {
+    if (get().isLoading || get().isDrawing) return false
+    set({ isLoading: true, error: null })
+    try {
+      const snapshot = await resetLottery()
+      setPendingDrawRequestId('')
+      set({ ...snapshotState(snapshot), phase: 'idle', currentWinner: null })
+      return true
+    } catch (error) {
+      set({ error: messageFor(error) })
+      return false
+    } finally {
+      set({ isLoading: false })
+    }
+  },
+
+  clearError: () => set({ error: null }),
 }))

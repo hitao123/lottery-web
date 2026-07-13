@@ -1,15 +1,30 @@
 services:
+  init-data:
+    image: alpine:3.22
+    command: ["sh", "-c", "mkdir -p /data && chown 65532:65532 /data"]
+    volumes:
+      - lottery-data:/data
+    networks:
+      - lottery
+
   api:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: lottery-api
     restart: unless-stopped
+    depends_on:
+      init-data:
+        condition: service_completed_successfully
     environment:
       PORT: "8080"
       GIN_MODE: release
+      LOTTERY_DATA_FILE: /data/lottery-state.json
+      LOTTERY_ADMIN_TOKEN: ${LOTTERY_ADMIN_TOKEN:?Set LOTTERY_ADMIN_TOKEN in .env before starting Docker Compose}
     expose:
       - "8080"
+    volumes:
+      - lottery-data:/data
     networks:
       - lottery
 
@@ -29,3 +44,6 @@ services:
 networks:
   lottery:
     driver: bridge
+
+volumes:
+  lottery-data:

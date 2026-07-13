@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "test": "node --test src/scenes/LotteryScene.static.test.mjs",
+    "test": "node --test src/scenes/LotteryScene.static.test.mjs src/store/LotterySafety.static.test.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

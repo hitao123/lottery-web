@@ -32,13 +32,28 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
 	})
 
-	store := lottery.NewStore()
-	lottery.RegisterRoutes(r, store)
+	dataFile := os.Getenv("LOTTERY_DATA_FILE")
+	if dataFile == "" {
+		dataFile = "./data/lottery-state.json"
+	}
+	store, err := lottery.NewPersistentStore(dataFile)
+	if err != nil {
+		log.Fatalf("load lottery state: %v", err)
+	}
+	adminToken := os.Getenv("LOTTERY_ADMIN_TOKEN")
+	if adminToken == "" {
+		log.Print("WARNING: LOTTERY_ADMIN_TOKEN is not set; API protection is disabled")
+	}
+	lottery.RegisterRoutes(r, store, adminToken)
 
 	srv := &http.Server{
 		Addr:              ":" + port,
 		Handler:           r,
 		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       10 * time.Second,
+		WriteTimeout:      15 * time.Second,
+		IdleTimeout:       60 * time.Second,
+		MaxHeaderBytes:    16 << 10,
 	}
 
 	go func() {
@@ -61,13 +76,14 @@ func main() {
 	log.Println("bye")
 }
 
-// corsMiddleware 仅用于本地开发态；线上经 nginx 同源代理无需 CORS。
+// corsMiddleware 仅用于显式配置的本地跨源开发；线上同源代理不发送 CORS 头。
 func corsMiddleware() gin.HandlerFunc {
 	allowOrigin := os.Getenv("CORS_ALLOW_ORIGIN")
-	if allowOrigin == "" {
-		allowOrigin = "*"
-	}
 	return func(c *gin.Context) {
+		if allowOrigin == "" {
+			c.Next()
+			return
+		}
 		c.Header("Access-Control-Allow-Origin", allowOrigin)
 		c.Header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
 		c.Header("Access-Control-Allow-Headers", "Content-Type, X-Request-Id")

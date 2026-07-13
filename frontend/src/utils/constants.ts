@@ -80,6 +80,14 @@ export const POSTPROCESSING = {
     noiseOpacity: 0.015,
     vignetteDarkness: 0.52,
   },
+  drawing: {
+    bloomIntensity: 0.82,
+    bloomRadius: 0.9,
+    chromaticOffset: [0.0007, 0.00024] as const,
+    luminanceThreshold: 0.62,
+    noiseOpacity: 0.018,
+    vignetteDarkness: 0.56,
+  },
   chasing: {
     bloomIntensity: 1.08,
     bloomRadius: 0.92,

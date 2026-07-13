@@ -14,6 +14,7 @@ import {
 
 export function CardField() {
   const setPhase = useLotteryStore((s) => s.setPhase)
+  const startDraw = useLotteryStore((s) => s.startDraw)
   const selectWinnerAsync = useLotteryStore((s) => s.selectWinnerAsync)
   const camera = useThree((state) => state.camera as THREE.PerspectiveCamera)
   const timelineRef = useRef<gsap.core.Timeline | null>(null)
@@ -34,9 +35,10 @@ export function CardField() {
   const startSpin = useCallback(() => {
     const { phase } = useLotteryStore.getState()
     if (phase !== 'idle') return
-    setPhase('spinning')
+    startDraw()
+    if (useLotteryStore.getState().phase !== 'spinning') return
     startBackgroundMusic()
-  }, [setPhase])
+  }, [startDraw])
 
   const stopSpin = useCallback(async () => {
     const { phase } = useLotteryStore.getState()
@@ -44,12 +46,17 @@ export function CardField() {
 
     stopBackgroundMusic()
 
-    // 优先调用后端安全随机抽奖；后端不可用时 selectWinnerAsync 内部已降级到本地。
-    const winner = await selectWinnerAsync()
-    if (!winner) return
+    // 在网络请求开始前离开 spinning，防止连按 S 产生多个真实抽奖请求。
+    setPhase('drawing')
 
-    // 抽奖耗时窗口内 phase 可能被其它流程改写（如用户重置），需要二次确认。
-    if (useLotteryStore.getState().phase !== 'spinning') return
+    // 后端是唯一结果源；失败时回到 idle 并提示操作者，不改用本地随机。
+    const winner = await selectWinnerAsync()
+    if (!winner) {
+      if (useLotteryStore.getState().phase === 'drawing') setPhase('idle')
+      return
+    }
+
+    if (useLotteryStore.getState().phase !== 'drawing') return
 
     setPhase('chasing')
     playChasingSound()
@@ -67,7 +74,6 @@ export function CardField() {
       onComplete: () => {
         setPhase('revealed')
         playRevealSound()
-        useLotteryStore.getState().confirmWinner()
       },
     })
 

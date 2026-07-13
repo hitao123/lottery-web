@@ -15,12 +15,14 @@ type UploadRequest struct {
 
 // DrawRequest 用于发起抽奖；Count 缺省视为 1。
 type DrawRequest struct {
-	Count int `json:"count"`
+	Count     int    `json:"count"`
+	RequestID string `json:"requestId"`
 }
 
 // DrawResponse 返回本次抽中的获奖者列表。
 type DrawResponse struct {
 	Winners []Guest `json:"winners"`
+	GuestsResponse
 }
 
 // GuestsResponse 用于查询全量宾客。

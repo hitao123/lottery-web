@@ -5,6 +5,7 @@ export function StatusBar() {
   const winners = useLotteryStore((s) => s.winners)
   const currentRound = useLotteryStore((s) => s.currentRound)
   const phase = useLotteryStore((s) => s.phase)
+  const currentWinner = useLotteryStore((s) => s.currentWinner)
 
   const totalGuests = guests.length
   const wonCount = winners.length
@@ -25,7 +26,7 @@ export function StatusBar() {
         }}
       >
         <span style={{ color: '#fff1c9', fontWeight: 600 }}>
-          第{currentRound}轮
+          第{currentWinner?.wonAtRound ?? currentRound}轮
         </span>
 
         <span style={{ color: 'rgba(255, 248, 240, 0.78)' }}>
@@ -41,6 +42,7 @@ export function StatusBar() {
         <span style={{ color: 'rgba(255, 248, 240, 0.42)', justifySelf: 'end', textAlign: 'right' }}>
           {phase === 'idle' && 'Space 开始洗牌'}
           {phase === 'spinning' && '抽奖箱洗牌中，按 S 最终锁定中奖者'}
+          {phase === 'drawing' && '正在从安全抽奖服务获取唯一结果…'}
           {phase === 'chasing' && '正在从抽奖箱中筛出幸运来宾...'}
           {phase === 'locking' && '幸运来宾锁定中'}
           {phase === 'revealed' && 'Enter / N 下一轮 | F 全屏'}

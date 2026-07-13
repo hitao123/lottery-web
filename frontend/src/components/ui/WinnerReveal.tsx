@@ -38,7 +38,7 @@ export function WinnerReveal() {
                 fontFamily: '"Outfit", system-ui, sans-serif',
               }}
             >
-              第 {currentRound} 轮
+              第 {currentWinner.wonAtRound ?? Math.max(1, currentRound - 1)} 轮
             </motion.div>
 
             <div

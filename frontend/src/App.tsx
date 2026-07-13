@@ -7,18 +7,15 @@ import { useFullscreen } from '@/hooks/useFullscreen'
 import { startIdleMusic, stopBackgroundMusic, unlockAudio } from '@/utils/audio'
 
 function App() {
-  const addGuests = useLotteryStore((s) => s.addGuests)
+  const loadLottery = useLotteryStore((s) => s.loadLottery)
   const phase = useLotteryStore((s) => s.phase)
   const guestCount = useLotteryStore((s) => s.guests.length)
   const { toggleFullscreen } = useFullscreen()
 
-  // Initialize with demo data
+  // 只从后端恢复已保存状态；生产环境绝不覆盖为演示号码。
   useEffect(() => {
-    const codes = Array.from({ length: 200 }, (_, i) =>
-      String(5200001 + i)
-    )
-    addGuests(codes)
-  }, [addGuests])
+    void loadLottery()
+  }, [loadLottery])
 
   useEffect(() => {
     const resumeIdleMusic = () => {
