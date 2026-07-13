@@ -6,15 +6,19 @@ import { useKeyboard } from '@/hooks/useKeyboard'
 import { useFullscreen } from '@/hooks/useFullscreen'
 import { startIdleMusic, stopBackgroundMusic, unlockAudio } from '@/utils/audio'
 
+import { getAdminToken } from '@/utils/lotteryApi'
+
 function App() {
   const loadLottery = useLotteryStore((s) => s.loadLottery)
   const phase = useLotteryStore((s) => s.phase)
   const guestCount = useLotteryStore((s) => s.guests.length)
   const { toggleFullscreen } = useFullscreen()
 
-  // 只从后端恢复已保存状态；生产环境绝不覆盖为演示号码。
+  // 有操作密码时才从后端恢复状态，避免未登录时刷 401。
   useEffect(() => {
-    void loadLottery()
+    if (getAdminToken()) {
+      void loadLottery()
+    }
   }, [loadLottery])
 
   useEffect(() => {
