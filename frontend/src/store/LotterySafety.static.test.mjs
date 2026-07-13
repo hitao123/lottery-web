@@ -14,6 +14,12 @@ test('winner selection has no browser-random fallback and is protected by an in-
   assert.match(storeSource, /const response = await apiDraw\(1, requestId\)/)
 })
 
+test('draw request id generation does not require crypto.randomUUID support', () => {
+  assert.doesNotMatch(storeSource, /return crypto\.randomUUID\(\)/)
+  assert.match(storeSource, /typeof globalThis\.crypto\?\.randomUUID === 'function'/)
+  assert.match(storeSource, /Date\.now\(\)\.toString\(36\)/)
+})
+
 test('app restores the saved backend snapshot instead of loading demo guests', () => {
   assert.match(appSource, /void loadLottery\(\)/)
   assert.doesNotMatch(appSource, /5200001/)

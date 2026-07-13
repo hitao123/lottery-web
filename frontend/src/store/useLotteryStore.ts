@@ -33,8 +33,24 @@ function messageFor(error: unknown) {
   return '发生未知错误，请检查服务连接后重试。'
 }
 
+let drawRequestIdSequence = 0
+
+function getCryptoRandomHex(byteLength: number) {
+  const getRandomValues = globalThis.crypto?.getRandomValues
+  if (typeof getRandomValues !== 'function') return ''
+
+  const bytes = new Uint8Array(byteLength)
+  getRandomValues.call(globalThis.crypto, bytes)
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('')
+}
+
 function newDrawRequestId() {
-  return crypto.randomUUID()
+  const randomUUID = globalThis.crypto?.randomUUID
+  if (typeof globalThis.crypto?.randomUUID === 'function') return randomUUID.call(globalThis.crypto)
+
+  drawRequestIdSequence += 1
+  const entropy = getCryptoRandomHex(8) || drawRequestIdSequence.toString(36)
+  return `draw-${Date.now().toString(36)}-${entropy}`
 }
 
 export const useLotteryStore = create<LotteryStore>((set, get) => ({
